@@ -1,11 +1,25 @@
-# API de Aluguel de Carros
+# Aluguel de Carros — API REST
 
-## Visão Geral
+Plataforma de aluguel de veículos baseada em reservas por categoria, com autenticação JWT, gestão de frota distribuída por branches e processamento de pagamentos simplificado.
 
-API REST para sistema de aluguel de carros, desenvolvida em **C# .NET 8** com **ASP.NET Core Web API**.  
-Permite cadastro de usuários, busca de veículos, criação de reservas, gestão de pagamentos e administração de frota, com autenticação JWT e autorização baseada em roles (RBAC).
+**Status**: Phase 1 (MVP com dados mockados) | **Versão API**: v1 | **Stack**: .NET 8.0 + ASP.NET Core
 
-Dados armazenados em JSON mockado (sem banco de dados real).
+---
+
+## 🎯 Visão Geral
+
+**O que é?**
+Sistema de gerenciamento de aluguel de veículos que permite clientes buscar, reservar e pagar pelo aluguel de carros, enquanto administradores gerenciam frota, categorias e preços.
+
+**Por que?**
+Validar o conceito de aluguel de carros como serviço via API, com suporte a múltiplos branches e categorias de veículos, antes de implementar persistência real em banco de dados.
+
+**Para quem?**
+- **Clientes:** Buscar e reservar carros pela web
+- **Administradores:** Gerenciar veículos, categorias e preços através da API
+
+**Quando?**
+Phase 1 (MVP) — Dados em JSON, sem banco real. Phase 2+ → SQL + Entity Framework.
 
 ---
 

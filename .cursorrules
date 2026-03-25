@@ -1,0 +1,448 @@
+# CURSOR RULES — Instruções para Agentes e Assistentes
+
+**Este arquivo contém instruções objetivas e não-negociáveis para agentes, assistentes e prompts futuros.**
+
+---
+
+## PRINCÍPIO FUNDAMENTAL
+
+Você está trabalhando em um repositório governado por Context Engineering.
+**Leia `.ai/` completamente antes de propor qualquer mudança.**
+
+Estes são seus documentos vinculantes:
+1. `.ai/business-rules.md` — Domínio e regras de negócio
+2. `.ai/standards.md` — Padrões de código e organização
+3. `.ai/architecture.md` — Decisões técnicas e responsabilidades
+4. `.ai/tech-stack.md` — Stack obrigatório e restrições
+
+---
+
+## OBRIGAÇÕES IMEDIATAS
+
+### Antes de Propor Qualquer Mudança
+
+```
+1. LEIA .ai/business-rules.md completamente
+2. LEIA .ai/standards.md completamente
+3. LEIA .ai/architecture.md completamente
+4. LEIA .ai/tech-stack.md completamente
+5. VALIDE sua proposta contra CADA DOCUMENTO
+6. SE encontrar conflito → REJEITAR a proposta
+7. SE passar em todos → PROSSEGUIR com implementação
+```
+
+### Depois de Propor Implementação
+
+```
+1. MANTENHA o projeto compilável o tempo todo
+2. NÃO quebre código existente correto
+3. USE mudanças incrementais (pequenos diffs)
+4. PREFIRA aplicar mudanças seguras a sugerir
+5. ATUALIZAR .http endpoints se mudar rotas
+6. ATUALIZAR README se adicionar endpoints públicos
+```
+
+---
+
+## REGRAS DE NEGÓCIO NÃO-NEGOCIÁVEIS
+
+### Domínio
+
+```
+✅ Sistema de ALUGUEL DE CARROS
+✅ Reserva é por CATEGORIA (não veículo específico)
+✅ Dados MOCKADOS em JSON (Phase 1)
+✅ Sem persistência real agora
+✅ Sem Banco de Dados real agora
+
+❌ NÃO criar simulação/cotação
+❌ NÃO criar check-in/check-out
+❌ NÃO criar avaliações
+❌ NÃO criar inspeções
+❌ NÃO criar relatórios complexos
+❌ NÃO criar campanhas/cupons
+```
+
+### Endpoints Oficiais (Somente Estes)
+
+```
+AUTH
+  POST   /api/v1/auth/register
+  POST   /api/v1/auth/login
+  POST   /api/v1/auth/refresh
+
+USERS
+  GET    /api/v1/users/me
+  GET    /api/v1/admin/users
+  POST   /api/v1/admin/users/{id}/roles
+
+VEHICLES
+  GET    /api/v1/vehicles/categories
+  GET    /api/v1/vehicles/search?branchId=&from=&to=&categoryId=&priceMin=&priceMax=
+  GET    /api/v1/vehicles/{id}
+  POST   /api/v1/admin/vehicles
+  PATCH  /api/v1/admin/vehicles/{id}
+
+BRANCHES
+  GET    /api/v1/branches
+
+PRICING
+  GET    /api/v1/pricing/rules
+  POST   /api/v1/pricing/rules
+  PATCH  /api/v1/pricing/rules/{id}
+
+RESERVATIONS
+  POST   /api/v1/reservations
+  GET    /api/v1/reservations/{id}
+  GET    /api/v1/users/me/reservations
+  PATCH  /api/v1/reservations/{id}
+  POST   /api/v1/reservations/{id}/cancel
+
+PAYMENTS
+  POST   /api/v1/payments/preauth
+  POST   /api/v1/payments/capture
+  POST   /api/v1/payments/refund
+  GET    /api/v1/payments/{id}
+```
+
+### Rotas NÃO Permitidas
+
+```
+❌ GET /admin/**           (deve ser /api/v1/admin/**)
+❌ POST /users/roles       (deve ser /api/v1/admin/users/{id}/roles)
+❌ GET /reservations       (ADMIN não tem de listar todas)
+❌ POST /payments/webhook  (integrações futuras bloqueadas)
+```
+
+### Padrão de Reserva
+
+```
+Obrigatório:
+- Reserva é por CATEGORIA
+- Não obriga veículo específico no momento da criação
+- Status inicial: PENDING_PAYMENT
+- Exige pré-autorização antes de CONFIRMED
+- Um veículo é alocado DEPOIS se necessário
+
+Bloqueado:
+- Não permitir reserva sem categoria
+- Não permitir 2+ reservas do mesmo usuário na mesma data/categoria
+- Não permitir sobreposição de datas
+```
+
+### Regras de Cancelamento
+
+```
+Obrigatório:
+- Apenas o user Proprietário OU ADMIN
+- Válido se checkIn > agora + 2 horas
+- Executa refund conforme Percentage em business-rules.md
+- Muda vehicle para AVAILABLE
+
+Bloqueado:
+- Não permitir cancelamento < 2 horas do check-in
+- Não permitir refund 100% em cancelamento < 1 dia antes
+```
+
+---
+
+## PADRÕES TÉCNICOS NÃO-NEGOCIÁVEIS
+
+### Stack Obrigatório
+
+```
+Language:   C# (não Java, nem Python, nem Node)
+Runtime:    .NET 8.0 (não .NET 6, nem .NET 5)
+Auth:       JWT + RBAC (não cookie sessions)
+Persist:    JSON mock (não banco real agora)
+Logging:    ILogger (não Serilog com arquivo agora)
+Swagger:    Swashbuckle.AspNetCore (obrigatório)
+```
+
+### Padrões de Código - Obrigatório
+
+```
+Controllers:
+  ✅ Herdar de ControllerBase
+  ✅ [ApiController] e [Route("api/v1/[controller]")]
+  ✅ [Authorize] para protegido
+  ✅ [Authorize(Roles = "ADMIN")] para admin
+  ✅ [AllowAnonymous] explícito para público
+  ❌ Lógica de negócio em controller
+
+Services:
+  ✅ IService + Service(IService)
+  ✅ Lógica de negócio aqui
+  ✅ Chamar repositories
+  ✅ Lançar exceções customizadas
+  ❌ HTTP direto
+
+Repositories:
+  ✅ IRepository + JsonRepository
+  ✅ Métodos async (Task, Task<T>)
+  ✅ ReadOnly Query
+  ✅ CRUD básico
+  ❌ Lógica de negócio
+```
+
+### Organização de Pastas
+
+```
+✅ Seguir estrutura em standards.md seção 2
+✅ Domain/Entities para modelos
+✅ Domain/Enums para status
+✅ Controllers/ para endpoints
+✅ Services/ para lógica
+✅ Repositories/ para interfaces
+✅ DTOs/ para request/response
+✅ Resources/MockData/ para JSON
+
+❌ Não criar pastas paralelas (ex: Handlers ao lado de Services)
+❌ Não misturar responsabilidades
+```
+
+### Nomenclatura
+
+```
+Classes:         PascalCase
+Métodos:         PascalCase + verbo (GetUser, CreateReservation)
+Métodos Async:   PascalCase + Async suffix (GetUserAsync)
+Properties:      PascalCase
+Parameters:      camelCase
+Private fields:  _camelCase
+```
+
+---
+
+## CHECKLIST DE VALIDAÇÃO POR TASK
+
+Toda implementação DEVE passar por único checklist:
+
+```
+1. COMPILAÇÃO
+   ☐ Projeto compila sem erros
+   ☐ Projeto compila sem warnings
+   ☐ Sem referências circulares
+
+2. CONFORMIDADE COM NEGÓCIO
+   ☐ Lido business-rules.md
+   ☐ Endpoint dentro dos oficiais
+   ☐ Lógica respeita regras de negócio
+   ☐ Status seguem transições válidas
+   ☐ Validações cobrem casos edge
+
+3. CONFORMIDADE COM ARQUITETURA
+   ☐ Lido architecture.md
+   ☐ pattern Clean Architecture aplicado
+   ☐ Responsabilidades na camada correta
+   ☐ Não há acesso direto a données em controller
+   ☐ Services orquestram repositories
+
+4. CONFORMIDADE COM PADRÕES
+   ☐ Lido standards.md
+   ☐ Nomenclatura segue convenção
+   ☐ Estrutura de pasta respeitada
+   ☐ Controllers com [Authorize] apropriado
+   ☐ DTOs separado de Entities
+   ☐ Exceptions customizadas usadas
+
+5. CONFORMIDADE COM STACK
+   ☐ Lido tech-stack.md
+   ☐ Nenhuma tecnologia proibida usada
+   ☐ Versões obrigatórias respeitadas
+   ☐ System.Text.Json com nomenclatura correta
+   ☐ JWT funcionando se autenticação necessária
+
+6. CÓDIGO SEGURO
+   ☐ Sem hardcoded passwords
+   ☐ Sem SQL injection risk (using JSON mock)
+   ☐ Sem exposição de dados sensíveis em response
+   ☐ Autorização validada em admin endpoints
+   ☐ Inputs validados
+
+7. TESTES MANUAIS (se implementado novo endpoint)
+   ☐ GET request funciona
+   ☐ POST com body válido funciona
+   ☐ POST com body inválido retorna 400
+   ☐ [Authorize] retorna 401 sem token
+   ☐ [Authorize(Roles = "ADMIN")] retorna 403 se USER
+   ☐ Response JSON tem nomenclatura camelCase
+
+8. DOCUMENTAÇÃO
+   ☐ .http atualizado com novo endpoint (se POST/PATCH)
+   ☐ README.md atualizado se endpoint é público
+   ☐ XML comments em methods
+```
+
+---
+
+## BLOQUEADORES CRÍTICOS
+
+### Rejeitar Absolutamente Se
+
+```
+❌ Task tenta implementar funcionalidade FORA do escopo (seção 11 business-rules.md)
+❌ Task tenta criar banco real (Entity Framework, DbContext, migrations)
+❌ Task tenta usar tecnologia FORA do tech-stack (Hangfire, RabbitMQ, Redis)
+❌ Task quebra compilação do projeto
+❌ Task remove código correto existente sem necessidade
+❌ Task implementa autenticação incompatível com JWT
+❌ Task coloca lógica de negócio em controller
+❌ Task não respeita RBAC (endpoints admin sem [Authorize(Roles = "ADMIN")])
+❌ Task cria endpoint não definido em endpoints oficiais
+❌ Task retorna dados sensíveis (passwords, tokens) em response
+❌ Task muda estrutura de solution sem motivo
+❌ Task sugere tecnologias Java, Node, Python, etc
+```
+
+### Mensagem de Bloqueio
+
+Se detectado bloqueador, PARAR e responder:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ [BLOCKED] — Proposta Rejeitada                          │
+├─────────────────────────────────────────────────────────┤
+│ RAZÃO:   {{motivo exato}}                               │
+│ REGRA:   {{qual documento viola}}                       │
+│ REFERÊNCIA: {{seção específica}}                        │
+└─────────────────────────────────────────────────────────┘
+
+Exemplo:
+┌─────────────────────────────────────────────────────────┐
+│ [BLOCKED] — Proposta Rejeitada                          │
+├─────────────────────────────────────────────────────────┤
+│ RAZÃO:   Entity Framework não suportado em Phase 1      │
+│ REGRA:   tech-stack.md seção 1.2                       │
+│ REFERÊNCIA: "❌ NÃO USAR: Entity Framework (Phase 2+)" │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## FLUXO DE IMPLEMENTAÇÃO
+
+### Para Cada Task
+
+```
+1. LER os 4 documentos .ai/*
+   └─ Se confuso, perguntar via chat (não assumir)
+
+2. VALIDAR proposta contra checklist
+   └─ Se falha em qualquer ponto, comunicar bloqueador
+
+3. CLONAR estrutura existente (standards.md seção 2)
+   └─ Não reinventar pasta ou padrão
+
+4. IMPLEMENTAR incrementalmente
+   └─ Um controller de cada vez
+   └─ Uma service de cada vez
+   └─ Testar após cada pequena mudança
+
+5. TESTAR
+   └─ Compilação ✅
+   └─ Endpoints via .http file ✅
+   └─ Authorization ✅
+
+6. CELEBRAR
+   └─ Adicionar comentário ao commit
+   └─ Listar mudanças no README se público
+```
+
+---
+
+## QUANDO ESTÁ CONFUSO?
+
+### Pergunte (Não Adivinhe)
+
+```
+❓ Qual é o padrão de nome correto para {{entidade}}?
+   → Procure em standards.md seção 2.2
+
+❓ Como implementar {{lógica}}?
+   → Procure em architecture.md seção 6
+
+❓ Qual è o regra de {{negócio}}?
+   → Procure em business-rules.md completamente
+
+❓ Qual é a versão correta de {{dependência}}?
+   → Procure em tech-stack.md seção 2
+
+❓ Ainda confuso após ler tudo?
+   → TIPO: "Confuso em [seção]. Possíveis interpretações: A, B, C. Qual?"
+   → AGUARDE esclarecimento
+   → NÃO ADIVINHE
+```
+
+---
+
+## RESPONDER EM ETAPAS
+
+Sempre que implementar algo com múltiplas partes:
+
+```
+ETAPA 1: Apresentar plano
+├─ Qu arquivo será criado/modificado
+├─ Qual é a mudança
+├─ Onde está no código
+
+ETAPA 2: Apresentar implementação
+├─ Mostrar código
+├─ Explicar brevemente
+
+ETAPA 3: Validar
+├─ Checklist passou?
+├─ Confirmação de sucesso
+
+ETAPA 4: Próximas ações
+├─ Se falta algo → próxima task
+├─ Se completo → resumo executivo
+```
+
+---
+
+## REFERÊNCIA RÁPIDA
+
+| Pergunta | Documento | Seção |
+|----------|-----------|-------|
+| Qual é a regra de negócio para {{X}}? | business-rules.md | Buscar por palavra-chave |
+| Como nomear {{entidade}}? | standards.md | Seção 1 |
+| Qual é a pasta para {{tipo}}? | standards.md | Seção 2 |
+| Como implementar {{padrão}}? | standards.md | Buscar seção padrão |
+| Qual é a responsabilidade de {{camada}}? | architecture.md | Seção 2 |
+| Qual é a decisão arquitetural sobre {{tópico}}? | architecture.md | Seção 3 |
+| É permitido usar {{tecnologia}}? | tech-stack.md | Seção 3 |
+| Qual é a versão obrigatória de {{lib}}? | tech-stack.md | Seção 2 |
+
+---
+
+## RESUMO EXECUTIVO
+
+```
+🛑 LEIA .ai/ ANTES DE QUALQUER MUDANÇA
+
+✅ Endpoints oficiais APENAS (business-rules.md)
+✅ Padrões de código OBRIGATÓRIOS (standards.md)
+✅ Arquitetura Clean OBRIGATÓRIA (architecture.md)
+✅ .NET 8.0 + JWT + JSON Mock OBRIGATÓRIO (tech-stack.md)
+✅ Projeto SEMPRE compilável
+✅ Mudanças PEQUENAS e SEGURAS
+
+❌ Sem Entity Framework agora
+❌ Sem banco real agora
+❌ Sem tecnologia fora do stack
+❌ Sem lógica de negócio em controller
+❌ Sem endpoints não oficiais
+
+DÚVIDAS? Pergunte. NÃO adivinhe.
+CONTINUIDADE? Leia README.md e .http para contexto.
+```
+
+---
+
+## CHANGELOG
+
+| Data | Evento | Descrição |
+|------|--------|-----------|
+| 2026-03-25 | Criação | Cursor rules inicial com bloqueadores e checklists |
+
