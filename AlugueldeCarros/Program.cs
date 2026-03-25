@@ -69,9 +69,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // Dependency Injection
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
-builder.Services.AddSingleton<IVehicleRepository, InMemoryVehicleRepository>();
+// Ordem importante: ReservationRepository antes de VehicleRepository (dependência)
 builder.Services.AddSingleton<IReservationRepository, InMemoryReservationRepository>();
+builder.Services.AddSingleton<IVehicleRepository, InMemoryVehicleRepository>();
+builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IPaymentRepository, InMemoryPaymentRepository>();
 builder.Services.AddSingleton<IBranchRepository, InMemoryBranchRepository>();
 builder.Services.AddSingleton<IVehicleCategoryRepository, InMemoryVehicleCategoryRepository>();
