@@ -1,0 +1,29 @@
+[
+  {
+    "Id": 1,
+    "Email": "customer@example.com",
+    "PasswordHash": "123456",
+    "FirstName": "Jo\u00E3o",
+    "LastName": "Silva",
+    "CreatedAt": "2023-01-01T00:00:00Z",
+    "UserRoles": []
+  },
+  {
+    "Id": 2,
+    "Email": "admin@aluguel.com",
+    "PasswordHash": "admin123",
+    "FirstName": "Admin",
+    "LastName": "Sistema",
+    "CreatedAt": "2023-01-01T00:00:00Z",
+    "UserRoles": []
+  },
+  {
+    "Id": 3,
+    "Email": "string@gmail",
+    "PasswordHash": "string123",
+    "FirstName": "strin12g",
+    "LastName": "string1",
+    "CreatedAt": "2026-03-25T03:26:27.9108373Z",
+    "UserRoles": []
+  }
+]

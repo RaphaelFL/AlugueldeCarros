@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "categoryId": 1,
+    "baseDailyRate": 50.00,
+    "weekendMultiplier": 1.2,
+    "peakSeasonMultiplier": 1.5
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "licensePlate": "ABC-1234",
+    "model": "Fiat Uno",
+    "year": 2020,
+    "categoryId": 1,
+    "branchId": 1,
+    "status": "AVAILABLE",
+    "dailyRate": 50.00
+  },
+  {
+    "id": 2,
+    "licensePlate": "XYZ-5678",
+    "model": "Toyota Corolla",
+    "year": 2022,
+    "categoryId": 2,
+    "branchId": 1,
+    "status": "AVAILABLE",
+    "dailyRate": 100.00
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Econômico",
+    "description": "Carros compactos"
+  },
+  {
+    "id": 2,
+    "name": "SUV",
+    "description": "Veículos utilitários"
+  }
+]

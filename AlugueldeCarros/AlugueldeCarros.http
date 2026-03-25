@@ -1,0 +1,182 @@
+### Cadastro de Usuário
+POST https://localhost:5001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "novo@example.com",
+  "password": "123456",
+  "firstName": "Maria",
+  "lastName": "Santos"
+}
+
+### Login
+POST https://localhost:5001/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "123456"
+}
+
+### Login admin
+POST https://localhost:5001/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@aluguel.com",
+  "password": "admin123"
+}
+
+### Refresh Token
+POST https://localhost:5001/api/v1/auth/refresh
+Content-Type: application/json
+
+"{token}"
+
+### List Branches
+GET https://localhost:5001/api/v1/branches
+
+### Vehicle Categories
+GET https://localhost:5001/api/v1/vehicles/categories
+
+### Busca de Veículos (precisa token)
+GET https://localhost:5001/api/v1/vehicles/search?categoryId=1&from=2023-12-01&to=2023-12-05
+Authorization: Bearer {token}
+
+### Obter veículo por id
+GET https://localhost:5001/api/v1/vehicles/1
+
+### Criar veículo (admin)
+POST https://localhost:5001/api/v1/admin/vehicles
+Authorization: Bearer {adminToken}
+Content-Type: application/json
+
+{
+  "licensePlate": "ABC-1234",
+  "model": "Fiat Uno",
+  "year": 2020,
+  "categoryId": 1,
+  "branchId": 1,
+  "dailyRate": 150.0,
+  "status": "AVAILABLE"
+}
+
+### Atualizar veículo (admin)
+PATCH https://localhost:5001/api/v1/admin/vehicles/1
+Authorization: Bearer {adminToken}
+Content-Type: application/json
+
+{
+  "licensePlate": "ABC-1234",
+  "model": "Fiat Uno",
+  "year": 2020,
+  "categoryId": 1,
+  "branchId": 1,
+  "dailyRate": 140.0,
+  "status": "AVAILABLE"
+}
+
+### Pricing rules
+GET https://localhost:5001/api/v1/pricing/rules
+
+### Create pricing rule (admin)
+POST https://localhost:5001/api/v1/pricing/rules
+Authorization: Bearer {adminToken}
+Content-Type: application/json
+
+{
+  "name": "Holiday surcharge",
+  "multiplier": 1.25,
+  "startDate": "2023-12-24",
+  "endDate": "2023-12-26"
+}
+
+### Update pricing rule (admin)
+PATCH https://localhost:5001/api/v1/pricing/rules/1
+Authorization: Bearer {adminToken}
+Content-Type: application/json
+
+{
+  "name": "Holiday surcharge",
+  "multiplier": 1.3,
+  "startDate": "2023-12-24",
+  "endDate": "2023-12-26"
+}
+
+### Pré-autorização de pagamento (usuário)
+POST https://localhost:5001/api/v1/payments/preauth
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "reservationId": 10,
+  "amount": 110.0
+}
+
+### Capturar pagamento
+POST https://localhost:5001/api/v1/payments/capture
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "paymentId": 1
+}
+
+### Reembolso
+POST https://localhost:5001/api/v1/payments/refund
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "paymentId": 1
+}
+
+### Obter pagamento
+GET https://localhost:5001/api/v1/payments/1
+Authorization: Bearer {token}
+
+### Meu perfil
+GET https://localhost:5001/api/v1/users/me
+Authorization: Bearer {token}
+
+### Minhas reservas
+GET https://localhost:5001/api/v1/users/me/reservations
+Authorization: Bearer {token}
+
+### Listar usuários (admin)
+GET https://localhost:5001/api/v1/admin/users
+Authorization: Bearer {adminToken}
+
+### Obter reserva por id
+GET https://localhost:5001/api/v1/reservations/1
+Authorization: Bearer {token}
+
+### Atualizar reserva
+PATCH https://localhost:5001/api/v1/reservations/1
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "startDate": "2023-12-02",
+  "endDate": "2023-12-06",
+  "status": "CONFIRMED"
+}
+
+### Cancelar reserva
+POST https://localhost:5001/api/v1/reservations/1/cancel
+Authorization: Bearer {token}
+
+### Busca de Veículos (precisa token)
+GET https://localhost:5001/api/v1/vehicles/search?categoryId=1&startDate=2023-12-01&endDate=2023-12-05
+Authorization: Bearer {token}
+
+### Criar Reserva (precisa token)
+POST https://localhost:5001/api/v1/reservations
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "startDate": "2023-12-01",
+  "endDate": "2023-12-05"
+}

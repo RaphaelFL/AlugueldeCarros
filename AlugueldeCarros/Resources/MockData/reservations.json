@@ -1,0 +1,32 @@
+[
+	{
+		"id": 1,
+		"userId": 1,
+		"categoryId": 1,
+		"vehicleId": 1,
+		"startDate": "2023-12-01T00:00:00Z",
+		"endDate": "2023-12-05T00:00:00Z",
+		"status": "CONFIRMED",
+		"totalAmount": 200.00
+	},
+	{
+		"id": 2,
+		"userId": 3,
+		"categoryId": 2,
+		"vehicleId": 2,
+		"startDate": "2023-12-10T00:00:00Z",
+		"endDate": "2023-12-12T00:00:00Z",
+		"status": "PENDING_PAYMENT",
+		"totalAmount": 200.00
+	},
+	{
+		"id": 10,
+		"userId": 1,
+		"categoryId": 2,
+		"vehicleId": 2,
+		"startDate": "2026-03-28T00:00:00Z",
+		"endDate": "2026-03-29T00:00:00Z",
+		"status": "PENDING_PAYMENT",
+		"totalAmount": 110.00
+	}
+]
