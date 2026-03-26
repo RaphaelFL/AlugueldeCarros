@@ -1,0 +1,1 @@
+global using AlugueldeCarros.Tests.Integration;

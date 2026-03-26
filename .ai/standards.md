@@ -29,6 +29,12 @@ Pontos importantes:
 - existe pasta Mappers, mas o projeto não depende pesadamente de mapeamento centralizado.
 - existe pasta Integrations, mas ela não define hoje uma integração externa relevante para o fluxo principal.
 
+Como interpretar este arquivo:
+
+- "padrão observado" significa comportamento recorrente no código atual.
+- "preservar" significa que a reconstrução deve manter isso salvo conflito direto com o código-fonte real.
+- exceções já existentes no projeto podem permanecer; este documento não exige uniformização forçada.
+
 ## 2. Convenções de Nome
 
 - classes, métodos, propriedades e enums em PascalCase.
@@ -56,6 +62,19 @@ Estilo atual de retorno:
 - NoContent para update sem payload.
 - NotFound, Unauthorized e Forbid quando necessário.
 
+Padrão real de erro compartilhado pelo middleware:
+
+- respostas de exceção retornam JSON com o shape { error: "mensagem" }.
+- o front deve priorizar response.data.error quando existir.
+- controllers ainda podem retornar Unauthorized, Forbid e NotFound diretamente quando fazem checagens simples.
+
+Contratos e serialização que devem ser assumidos na reconstrução:
+
+- IDs são int em entidades, DTOs e claims operacionais.
+- datas entram e saem como DateTime do ASP.NET Core padrão, sem convenção customizada documentada acima da serialização padrão.
+- enums circulam diretamente em domínio e contratos sem camada extra obrigatória de tradução.
+- payloads de request usam nomes de propriedades em PascalCase do backend C# quando serializados pelo padrão atual do ASP.NET Core.
+
 ## 4. Padrão de Services
 
 Padrão observado:
@@ -70,6 +89,7 @@ O que preservar:
 - regras de negócio fora dos controllers.
 - cálculos e mudanças de status dentro dos services.
 - dependência por interfaces de repository.
+- services concretos injetados diretamente nos controllers.
 
 ## 5. Padrão de Repositories
 
@@ -86,6 +106,10 @@ Implicações:
 - não há controle transacional.
 - não há concorrência sofisticada.
 
+Ponto de fidelidade importante:
+
+- não substituir esse padrão por ORM, unit of work ou abstrações extras durante a reconstrução.
+
 ## 6. Segurança
 
 Padrão observado:
@@ -100,6 +124,7 @@ Ao reconstruir, preserve exatamente:
 - roles Customer e Admin.
 - uso de Authorize(Roles = "Admin").
 - leitura do userId a partir do token.
+- fallback de senha em texto puro apenas na autenticação, por compatibilidade com dados atuais.
 
 ## 7. Dados e Contratos
 
@@ -107,6 +132,19 @@ Ao reconstruir, preserve exatamente:
 - enums ficam em Domain/Enums.
 - requests ficam em DTOs por módulo.
 - nem todo endpoint usa DTO de resposta; alguns retornam entidades anônimos ou a própria entidade.
+
+Para reconstrução fiel:
+
+- manter DTOs de entrada por módulo.
+- não forçar DTO de saída onde o projeto atual não usa.
+- manter IDs como int em contratos e entidades.
+
+Padrões obrigatórios versus padrões observados:
+
+- obrigatório: roles Customer e Admin, JWT, ownership em controller, repositories in-memory, services concretos nos controllers.
+- obrigatório: evitar EF Core, camadas extras e contratos que o projeto atual não exige.
+- observado: coexistência de entidades retornadas diretamente e objetos anônimos em alguns controllers.
+- observado: interface e implementação de repository no mesmo arquivo em vários módulos.
 
 Se for recriar, mantenha coerência com o estado atual em vez de forçar padronização extra.
 
@@ -118,6 +156,12 @@ O código atual favorece:
 - baixo número de abstrações.
 - dependência direta de services concretos nos controllers.
 - lógica suficiente para o mock funcional, sem infraestrutura extra.
+
+Sinais de que a reconstrução está desalinhada:
+
+- criação de interfaces de service sem necessidade real.
+- criação de camadas Application, Domain Services ou Use Cases que hoje não existem.
+- introdução de eventos, filas, cache distribuído ou persistência externa.
 
 Evite introduzir na reconstrução, a menos que o projeto mude de direção:
 
@@ -189,6 +233,11 @@ Páginas devem:
 - manter formulários e ações próximos do contexto da tarefa.
 - não duplicar regras de domínio já descritas no backend.
 
+Padrão esperado para reprodução:
+
+- cada área principal deve continuar agrupada em public-pages.tsx, user-pages.tsx e admin-pages.tsx.
+- rotas principais devem continuar lazy-loaded.
+
 ### 10.5 Padrão de Tratamento de Erro e Loading
 
 No front:
@@ -229,8 +278,9 @@ Além disso:
 
 O visual do front deve seguir:
 
-- estética profissional e confiável.
-- boa hierarquia visual.
-- tipografia mais expressiva que stacks padrão.
+- linguagem visual consistente entre áreas pública, customer e admin.
+- tipografia baseada nas fontes já escolhidas no projeto.
 - cards, badges, headers e feedbacks reutilizáveis.
 - consistência entre área pública, customer e admin.
+
+Este bloco orienta consistência visual, não autoriza mudar o produto para outro estilo de arquitetura front-end.

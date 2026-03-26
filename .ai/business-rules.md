@@ -17,6 +17,20 @@ Persistência atual:
 - dados vindos de arquivos JSON.
 - repositórios em memória.
 
+Escopo deste arquivo:
+
+- registrar apenas comportamento implementado hoje.
+- deixar explícitos os invariantes que outra IA não deve alterar ao reconstruir o sistema.
+- separar regra real de produto de conveniência visual do front.
+
+Invariantes globais do sistema:
+
+- autenticação protegida usa JWT Bearer.
+- os únicos papéis operacionais são Customer e Admin.
+- ownership de reservas e pagamentos é aplicado no fluxo HTTP.
+- reserva é criada por categoria e recebe um veículo disponível internamente.
+- o sistema opera sobre dados mockados carregados em memória.
+
 ## 2. Papéis e Acesso
 
 Papéis reais do sistema:
@@ -30,6 +44,10 @@ Regras:
 2. Endpoints de usuário exigem autenticação.
 3. Usuário comum só pode acessar a própria reserva e seus próprios pagamentos.
 4. Admin pode acessar qualquer reserva e qualquer pagamento.
+
+Invariante operacional:
+
+- o sistema não usa um papel intermediário como Guest.
 
 ## 3. Regras de Usuário e Autenticação
 
@@ -89,6 +107,7 @@ Resultado da criação:
 - VehicleId é preenchido na reserva.
 - TotalAmount = número de dias da reserva x DailyRate do veículo.
 - o cálculo usa Math.Max(1, (endDate - startDate).Days).
+- o serviço não escolhe um veículo específico enviado pelo cliente; ele seleciona internamente o primeiro disponível.
 
 Observação importante:
 
@@ -107,6 +126,7 @@ Observação importante:
 - não é permitido cancelar quando faltam 2 horas ou menos para StartDate.
 - ao cancelar, o status vira CANCELLED.
 - o cancelamento cria um pagamento adicional com status REFUNDED.
+- o valor desse novo pagamento é calculado sobre Reservation.TotalAmount.
 
 ### Status de reserva
 
@@ -156,7 +176,7 @@ Efeitos de captura aprovada:
 Quando a reserva é cancelada, o sistema cria um novo Payment com:
 
 - ReservationId da reserva cancelada.
-- Amount calculado conforme a janela até o check-in.
+- Amount calculado como Reservation.TotalAmount x percentual de refund.
 - Status REFUNDED.
 
 Percentual usado no cancelamento:
@@ -165,6 +185,23 @@ Percentual usado no cancelamento:
 - mais de 3 dias: 80%
 - mais de 1 dia: 50%
 - 1 dia ou menos: 0%
+
+Invariantes de reserva e pagamento que devem ser preservados:
+
+- criação de reserva sempre termina em PENDING_PAYMENT.
+- captura aprovada sempre muda o pagamento para APPROVED.
+- captura aprovada também confirma a reserva.
+- captura aprovada também marca o veículo como RESERVED, se houver VehicleId.
+- refund direto não cria novo payment; ele altera o payment aprovado existente.
+- refund por cancelamento cria um novo payment REFUNDED.
+
+Matriz minima por recurso:
+
+- User: customer lê o próprio perfil; admin lista usuários e atribui roles.
+- Reservation: customer lê, atualiza e cancela a própria reserva; admin faz isso para qualquer reserva existente.
+- Payment: customer opera apenas pagamentos ligados a reservas próprias; admin opera qualquer pagamento existente.
+- Vehicle: público consulta catálogo; admin cria e atualiza frota.
+- PricingRule: público consulta; admin cria e atualiza.
 
 ## 7. Regras de Ownership
 
@@ -175,6 +212,11 @@ Regras atuais:
 - ReservationsController compara o UserId da reserva com o claim NameIdentifier.
 - PaymentsController carrega o pagamento, resolve a reserva e compara o UserId da reserva com o claim NameIdentifier.
 - UserController sempre usa o usuário autenticado para retornar me e me/reservations.
+
+Consequência para reconstrução:
+
+- ownership pertence ao fluxo HTTP e à camada de controller.
+- essa regra não deve ser empurrada para seed, repository ou front como fonte de verdade.
 
 ## 8. Regras que Não Devem Ser Inventadas
 
@@ -192,6 +234,10 @@ Ao reconstruir a API, não introduza como se já existissem:
 
 O front deve materializar as regras já existentes, não reinterpretá-las.
 
+Tudo nesta seção deve ser lido como efeito de regras existentes da API, não como regra nova de produto.
+
+Se houver conflito entre UX e regra operacional, prevalece a regra operacional definida nas seções anteriores.
+
 ### 9.1 O que Customer pode ver e fazer
 
 Customer pode:
@@ -200,7 +246,7 @@ Customer pode:
 - ver o próprio perfil em /users/me.
 - ver as próprias reservas em /users/me/reservations.
 - consultar detalhe de uma reserva se ela for dele.
-- remarcar a própria reserva usando PATCH quando o backend permitir.
+- atualizar a própria reserva usando PATCH na rota existente de reservations.
 - cancelar a própria reserva quando a janela de 2 horas ainda não tiver sido violada.
 - usar o fluxo de pagamento para preauth, capture e refund apenas quando o backend permitir acesso ao recurso.
 - navegar pelo catálogo público e iniciar uma reserva por categoria.
@@ -238,6 +284,11 @@ Fluxo oficial de UX:
 6. usuário executa pre-autorização.
 7. se houver pagamento pendente conhecido, pode capturar.
 8. se houver pagamento aprovado conhecido, pode solicitar refund.
+
+Limite importante desse fluxo:
+
+- o front não pode depender de um endpoint inexistente para listar pagamentos por reserva.
+- quando precisar exibir pagamento associado, deve usar apenas o que foi retornado pela API ou o registro local criado no próprio fluxo.
 
 ### 9.4 Como o cancelamento deve aparecer
 

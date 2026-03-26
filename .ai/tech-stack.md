@@ -9,6 +9,12 @@ Este documento lista a stack efetivamente usada hoje no projeto. Use-o como refe
 - Tipo de projeto: ASP.NET Core Web API
 - Formato: SDK-style csproj
 
+Objetivo deste arquivo:
+
+- registrar a stack efetivamente instalada e usada.
+- evitar substituição automática por tecnologias equivalentes.
+- servir como referência operacional de ambiente para reconstrução.
+
 ## 2. Pacotes do Projeto Principal
 
 Pacotes confirmados no csproj atual:
@@ -108,6 +114,16 @@ Uso atual:
 - testes unitários de services e middleware.
 - testes de integração com WebApplicationFactory.
 
+Versões confirmadas no projeto de testes:
+
+- Microsoft.NET.Test.Sdk 17.8.0
+- xUnit 2.5.3
+- xunit.runner.visualstudio 2.5.3
+- FluentAssertions 6.12.0
+- Moq 4.20.0
+- Microsoft.AspNetCore.Mvc.Testing 8.0.0
+- coverlet.collector 6.0.0
+
 ## 9. Convenções Técnicas Importantes
 
 - IDs atuais são inteiros.
@@ -143,12 +159,29 @@ Stack adotada:
 - Axios 1
 - Tailwind CSS 3
 - Lucide React para ícones
+- jwt-decode 4
+- clsx 2
+- @fontsource-variable/manrope
+- @fontsource/space-grotesk
 
 ### 11.1 Estratégia de Build
 
 - desenvolvimento com Vite.
 - build de produção com tsc -b && vite build.
 - code splitting por lazy loading nas rotas principais.
+
+Ambiente local observado hoje:
+
+- Vite roda na porta 5173.
+- proxy local de /api aponta por padrão para http://localhost:5097.
+- esse alvo pode ser alterado por VITE_PROXY_TARGET.
+- o cliente HTTP usa VITE_API_BASE_URL quando configurado; se vazio, usa chamadas relativas.
+
+Gerenciamento de dependências e ambiente:
+
+- existe package-lock.json no frontend e ele deve ser tratado como referência primária das versões instaladas.
+- o fluxo padrão atual usa npm.
+- Node.js 20+ é compatível com a execução atual documentada no projeto.
 
 ### 11.2 Estratégia de Autenticação no Front
 
@@ -164,6 +197,11 @@ Stack adotada:
 - proxy do Vite para /api no ambiente local.
 - TanStack Query para cache, refetch e invalidação.
 
+Variáveis de ambiente relevantes:
+
+- VITE_API_BASE_URL
+- VITE_PROXY_TARGET
+
 ### 11.4 Bibliotecas Permitidas no Front
 
 UI e experiência:
@@ -172,12 +210,14 @@ UI e experiência:
 - Lucide React
 - @fontsource-variable/manrope
 - @fontsource/space-grotesk
+- clsx
 
 Estado e dados:
 
 - TanStack Query
 - Zustand
 - Axios
+- jwt-decode
 
 Formulários e validação:
 
@@ -194,3 +234,24 @@ Para manter coerência com o projeto atual, evitar:
 - bibliotecas de UI grandes que descaracterizem o produto.
 - consumo de endpoints inexistentes.
 - mock paralelo de API no front como fonte de verdade.
+
+Dependências de ambiente que devem ser mantidas explícitas na reconstrução:
+
+- Node.js em versão compatível com Vite 6 e TypeScript 5.
+- gerenciador de pacote compatível com o lockfile presente no projeto.
+- backend .NET acessível no endereço configurado para proxy ou baseURL.
+
+Estado atual de testes do front:
+
+- não há stack de testes de front documentada como parte obrigatória do produto atual.
+- a reprodução fiel do sistema não depende de introduzir Vitest, Jest ou Cypress se isso não existir no código reconstruído.
+
+Comandos operacionais de referência:
+
+- backend restore: dotnet restore.
+- backend build: dotnet build.
+- backend run: dotnet run.
+- backend tests: dotnet test.
+- frontend install: npm install.
+- frontend dev: npm run dev.
+- frontend build: npm run build.

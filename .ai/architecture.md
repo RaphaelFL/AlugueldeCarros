@@ -15,6 +15,14 @@ Fluxo padrão:
 
 Cliente HTTP -> middleware ASP.NET Core -> controller -> service -> repository in-memory -> resposta JSON.
 
+Objetivo deste arquivo para reconstrução:
+
+- descrever a arquitetura que precisa ser reproduzida.
+- registrar limites importantes do estado atual.
+- evitar que outra IA troque a implementação real por uma arquitetura "melhorada".
+
+Este arquivo não substitui o código-fonte, mas deve permitir reconstrução estrutural fiel quando lido junto com business-rules.md, standards.md e tech-stack.md.
+
 ## 2. Stack Arquitetural Real
 
 - ASP.NET Core Web API em .NET 8.
@@ -46,6 +54,13 @@ Program.cs faz o seguinte:
 8. Executa JsonDataLoader.LoadAllDataAsync() antes de começar a atender requisições.
 9. Liga HTTPS redirection, middleware de exceção, autenticação, autorização e mapeamento de controllers.
 
+Ordem real de registro que importa hoje:
+
+- IReservationRepository é registrado antes de IVehicleRepository.
+- IVehicleRepository depende da leitura de reservas para filtrar disponibilidade.
+- repositories são singleton e services são scoped.
+- JsonDataLoader executa uma carga única no startup e depois o sistema opera apenas em memória.
+
 ## 4. Organização por Camada
 
 ### 4.1 Controllers
@@ -75,6 +90,67 @@ Controllers existentes:
 - PricingController
 - AdminUsersController
 - AdminVehiclesController
+
+Inventario minimo de rotas expostas hoje:
+
+- POST api/v1/auth/register
+- POST api/v1/auth/login
+- POST api/v1/auth/refresh
+- GET api/v1/users/me
+- GET api/v1/users/me/reservations
+- GET api/v1/vehicles/categories
+- GET api/v1/vehicles/search
+- GET api/v1/vehicles/{id}
+- GET api/v1/branches
+- POST api/v1/reservations
+- GET api/v1/reservations/{id}
+- PATCH api/v1/reservations/{id}
+- POST api/v1/reservations/{id}/cancel
+- POST api/v1/payments/preauth
+- POST api/v1/payments/capture
+- POST api/v1/payments/refund
+- GET api/v1/payments/{id}
+- GET api/v1/pricing/rules
+- POST api/v1/pricing/rules
+- PATCH api/v1/pricing/rules/{id}
+- GET api/v1/pricing/rules/{id}
+- GET api/v1/admin/users
+- POST api/v1/admin/users/{id}/roles
+- POST api/v1/admin/vehicles
+- PATCH api/v1/admin/vehicles/{id}
+
+Observação importante:
+
+- a listagem acima registra o inventario minimo de endpoints para reconstrução fiel.
+- verbos HTTP, autenticação e regras de uso devem seguir business-rules.md e o código-fonte atual.
+
+Matriz minima de acesso por rota:
+
+- POST api/v1/auth/register: pública, AuthController.
+- POST api/v1/auth/login: pública, AuthController.
+- POST api/v1/auth/refresh: pública, AuthController.
+- GET api/v1/users/me: autenticada, UserController.
+- GET api/v1/users/me/reservations: autenticada, UserController.
+- GET api/v1/vehicles/categories: pública, VehiclesController.
+- GET api/v1/vehicles/search: pública, VehiclesController.
+- GET api/v1/vehicles/{id}: pública, VehiclesController.
+- GET api/v1/branches: pública, BranchesController.
+- POST api/v1/reservations: autenticada, ReservationsController.
+- GET api/v1/reservations/{id}: autenticada com ownership ou Admin, ReservationsController.
+- PATCH api/v1/reservations/{id}: autenticada com ownership ou Admin, ReservationsController.
+- POST api/v1/reservations/{id}/cancel: autenticada com ownership ou Admin, ReservationsController.
+- POST api/v1/payments/preauth: autenticada com ownership da reserva ou Admin, PaymentsController.
+- POST api/v1/payments/capture: autenticada com ownership do pagamento ou Admin, PaymentsController.
+- POST api/v1/payments/refund: autenticada com ownership do pagamento ou Admin, PaymentsController.
+- GET api/v1/payments/{id}: autenticada com ownership do pagamento ou Admin, PaymentsController.
+- GET api/v1/pricing/rules: pública, PricingController.
+- POST api/v1/pricing/rules: Admin, PricingController.
+- PATCH api/v1/pricing/rules/{id}: Admin, PricingController.
+- GET api/v1/pricing/rules/{id}: pública, PricingController.
+- GET api/v1/admin/users: Admin, AdminUsersController.
+- POST api/v1/admin/users/{id}/roles: Admin, AdminUsersController.
+- POST api/v1/admin/vehicles: Admin, AdminVehiclesController.
+- PATCH api/v1/admin/vehicles/{id}: Admin, AdminVehiclesController.
 
 ### 4.2 Services
 
@@ -113,6 +189,26 @@ Padrão atual:
 - os dados são carregados uma vez no startup e depois vivem em memória.
 - não há persistência de volta para JSON após mutações.
 
+Arquivos seed usados no estado atual:
+
+- users.json
+- roles.json
+- user-roles.json
+- branches.json
+- vehicle-categories.json
+- vehicles.json
+- reservations.json
+- payments.json
+- pricing-rules.json
+
+Relações que precisam continuar válidas na reconstrução:
+
+- User se relaciona com Role por UserRole.
+- Reservation referencia User, VehicleCategory e opcionalmente Vehicle.
+- Payment referencia Reservation.
+- Vehicle referencia Branch e VehicleCategory.
+- PricingRule referencia VehicleCategory.
+
 ## 5. Modelo de Dados Operacional
 
 Entidades principais do domínio:
@@ -135,6 +231,34 @@ Enums relevantes:
 - VehicleStatus: AVAILABLE, RESERVED, RENTED, MAINTENANCE, BLOCKED
 
 Os IDs usados pelo código atual são inteiros, não GUIDs.
+
+Campos e vínculos que outra IA deve preservar, mesmo que os nomes internos variem minimamente:
+
+- User: Id, Email, PasswordHash e coleção ou resolução de roles.
+- Vehicle: Id, CategoryId, BranchId, DailyRate e Status.
+- Reservation: Id, UserId, CategoryId, VehicleId, StartDate, EndDate, Status e TotalAmount.
+- Payment: Id, ReservationId, Amount, Status e CreatedAt.
+- PricingRule: vínculo com categoria e campos suficientes para CRUD administrativo.
+
+Contratos minimos de entrada realmente usados hoje:
+
+- RegisterRequest: Email, Password, FirstName, LastName.
+- LoginRequest: Email, Password.
+- AuthResponse: Token e opcionalmente Email, conforme endpoint.
+- CreateReservationRequest: CategoryId, StartDate, EndDate.
+- UpdateReservationRequest: StartDate?, EndDate?, Status?.
+- PreauthRequest: ReservationId, Amount.
+- CaptureRequest: PaymentId.
+- RefundRequest: PaymentId.
+- AddUserRolesRequest: Roles como lista de string.
+- CreateVehicleRequest e UpdateVehicleRequest: LicensePlate, Model, Year, CategoryId, BranchId, DailyRate, Status.
+
+Formato de resposta que precisa ser preservado no nivel comportamental:
+
+- endpoints de criação retornam Created ou CreatedAtAction com o recurso criado em vários módulos.
+- alguns endpoints retornam entidades diretamente.
+- alguns endpoints retornam objetos anônimos projetados pelo controller.
+- falhas tratadas pelo middleware retornam JSON com a propriedade error.
 
 ## 6. Autenticação e Autorização
 
@@ -179,6 +303,7 @@ Papéis reais usados hoje:
 - seleciona o primeiro veículo disponível retornado pela busca.
 - cria reserva com status PENDING_PAYMENT.
 - calcula TotalAmount usando DailyRate do veículo, não PricingRule.
+- expõe create, get by id, patch e cancel.
 
 ### Payments
 
@@ -186,6 +311,17 @@ Papéis reais usados hoje:
 - capture aprova ou recusa de forma determinística com base em paymentId % 10.
 - quando aprovado, a reserva vira CONFIRMED e o veículo vira RESERVED.
 - refund só aceita pagamento APPROVED e troca o status para REFUNDED.
+
+Mapa minimo modulo -> dependencias principais:
+
+- AuthController -> AuthService -> IUserRepository, IRoleRepository, JwtTokenService, PasswordHasher.
+- UserController -> UserService e ReservationService.
+- VehiclesController -> VehicleService e VehicleCategoryService.
+- ReservationsController -> ReservationService.
+- PaymentsController -> PaymentService e ReservationService para ownership.
+- PricingController -> PricingService.
+- AdminUsersController -> UserService.
+- AdminVehiclesController -> VehicleService.
 
 ## 8. Tratamento de Erros
 
@@ -214,6 +350,13 @@ Objetivo arquitetural do front:
 - refletir JWT, RBAC e ownership do backend.
 - separar experiência pública, autenticada e administrativa.
 - manter estrutura escalável sem adicionar complexidade desnecessária.
+
+Para reconstrução fiel, o front deve preservar estes limites:
+
+- não inventar endpoints.
+- não duplicar regra de negócio que já existe no backend.
+- não trocar SPA por SSR.
+- não modelar reserva como seleção manual do veículo final, porque a API reserva por categoria.
 
 ### 10.1 Organização do Front
 
@@ -271,6 +414,11 @@ Guards do front:
 - RequireAuth para sessão válida.
 - RequireAdmin para páginas administrativas.
 
+Layouts principais usados hoje:
+
+- public-layout para área pública.
+- app-shell para áreas autenticadas customer e admin.
+
 ### 10.4 Estratégia de Estado
 
 O front usa:
@@ -283,6 +431,12 @@ Estado persistido:
 - token JWT.
 - usuário autenticado.
 - registro local reservationId -> paymentId quando o fluxo de pagamento passa pelo front.
+
+Estado derivado que deve continuar no cliente:
+
+- role atual do usuário para menus e guards.
+- sessão carregada a partir do token e de /api/v1/users/me.
+- cache de listas e detalhes via TanStack Query.
 
 ### 10.5 Estratégia de Autenticação no Front
 
@@ -306,6 +460,11 @@ O cliente HTTP:
 - usa baseURL configurável por variável de ambiente.
 - em desenvolvimento, usa proxy do Vite para /api -> backend .NET local, evitando problema de CORS sem alterar a API.
 
+Variáveis de ambiente relevantes para reprodução:
+
+- VITE_API_BASE_URL para apontar diretamente para a API quando necessário.
+- VITE_PROXY_TARGET para definir o backend alvo do proxy local do Vite.
+
 ### 10.7 Relação Entre Front e Back
 
 O front respeita as limitações reais da API:
@@ -315,12 +474,31 @@ O front respeita as limitações reais da API:
 - como não existe endpoint para listar pagamentos por reserva ou por usuário, o front resolve o pagamento conhecido por registro local e por correspondência validada no seed quando possível.
 - menus e ações administrativas só aparecem para Admin.
 
+Mapa minimo tela -> dependencias principais:
+
+- home e login: endpoints de auth e navegação pública.
+- catálogo e detalhe: vehicles/search, vehicles/{id}, vehicles/categories e branches.
+- dashboard e perfil do customer: users/me e users/me/reservations.
+- detalhe e pagamento da reserva: reservations/{id}, payments/preauth, payments/capture, payments/refund e payments/{id}.
+- área de usuários admin: admin/users e admin/users/{id}/roles.
+- área de veículos admin: admin/vehicles e vehicles/{id} para contexto de edição.
+- área de pricing admin: pricing/rules e pricing/rules/{id}, com criação e atualização administrativa.
+
 ### 10.8 Estratégia de UX
 
-O front foi desenhado para parecer produto real, mas sem inventar módulos:
+O front foi desenhado para cobrir o produto real existente, sem inventar módulos:
 
 - landing com posicionamento institucional claro.
 - catálogo com filtros reais da API.
 - detalhe do veículo com CTA de reserva coerente com a regra de reserva por categoria.
 - dashboard customer com foco em reservas ativas e próximas ações.
 - dashboard admin com foco operacional em usuários, frota e pricing rules.
+
+Critérios minimos para considerar a reconstrução fiel:
+
+- mesmas áreas públicas, customer e admin.
+- mesmas rotas principais da SPA.
+- mesmo modelo de autenticação por JWT.
+- mesma separação de guards RequireAuth e RequireAdmin.
+- mesmo fluxo busca -> reserva -> pagamento.
+- mesma limitação estrutural de pagamentos conhecidos sem listagem completa por reserva.
