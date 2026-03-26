@@ -3,3 +3,8 @@ bin/
 obj/
 *.user
 *.suo
+node_modules/
+dist/
+.env
+coverage/
+frontend/*.tsbuildinfo

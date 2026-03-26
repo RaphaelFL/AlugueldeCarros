@@ -7,6 +7,105 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlugueldeCarros", "Alugueld
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlugueldeCarros.Tests", "AlugueldeCarros.Tests\AlugueldeCarros.Tests.csproj", "{36486AEB-33E1-4E4E-967E-179DF1B5AC70}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9378EFF-8F27-4D69-9707-8F2D736D8E91}"
+	ProjectSection(SolutionItems) = preProject
+		.cursorrules = .cursorrules
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".ai", ".ai", "{B6F7B928-9128-4D23-B4A5-A1F9418E9FD3}"
+	ProjectSection(SolutionItems) = preProject
+		.ai\architecture.md = .ai\architecture.md
+		.ai\business-rules.md = .ai\business-rules.md
+		.ai\standards.md = .ai\standards.md
+		.ai\tech-stack.md = .ai\tech-stack.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "frontend", "frontend", "{5EA7BCEA-ECDD-4063-9A7F-BDF23A4B1E2A}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\.env.example = frontend\.env.example
+		frontend\index.html = frontend\index.html
+		frontend\package-lock.json = frontend\package-lock.json
+		frontend\package.json = frontend\package.json
+		frontend\postcss.config.cjs = frontend\postcss.config.cjs
+		frontend\tailwind.config.d.ts = frontend\tailwind.config.d.ts
+		frontend\tailwind.config.js = frontend\tailwind.config.js
+		frontend\tailwind.config.ts = frontend\tailwind.config.ts
+		frontend\tsconfig.app.json = frontend\tsconfig.app.json
+		frontend\tsconfig.json = frontend\tsconfig.json
+		frontend\tsconfig.node.json = frontend\tsconfig.node.json
+		frontend\vite.config.d.ts = frontend\vite.config.d.ts
+		frontend\vite.config.js = frontend\vite.config.js
+		frontend\vite.config.ts = frontend\vite.config.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B8B0268B-D869-4862-AB5D-D28FC7CB4770}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\main.tsx = frontend\src\main.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{C3B1D18C-95BA-40D4-97C1-D25E4D33CC6C}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\api\http.ts = frontend\src\api\http.ts
+		frontend\src\api\services.ts = frontend\src\api\services.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{710C7B32-7D7B-43CA-813D-20483DD73993}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\app\providers.tsx = frontend\src\app\providers.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{BC788AB2-D1B4-430A-BF8E-6A37A31D4759}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\components\ui.tsx = frontend\src\components\ui.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hooks", "hooks", "{17BB9910-16F2-4D52-B604-B76BD148FDB0}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\hooks\use-auth.ts = frontend\src\hooks\use-auth.ts
+		frontend\src\hooks\use-reservation-payment.ts = frontend\src\hooks\use-reservation-payment.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "layouts", "layouts", "{48E2E71A-ACF9-4C97-A6D3-E4921CCB125D}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\layouts\app-shell.tsx = frontend\src\layouts\app-shell.tsx
+		frontend\src\layouts\public-layout.tsx = frontend\src\layouts\public-layout.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{3D5EB3DC-CB0E-4894-8078-7E340A589D95}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\lib\jwt.ts = frontend\src\lib\jwt.ts
+		frontend\src\lib\utils.ts = frontend\src\lib\utils.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pages", "pages", "{7D726B47-8C8C-43EA-AEFF-44B3A8D61333}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\pages\admin-pages.tsx = frontend\src\pages\admin-pages.tsx
+		frontend\src\pages\public-pages.tsx = frontend\src\pages\public-pages.tsx
+		frontend\src\pages\user-pages.tsx = frontend\src\pages\user-pages.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "routes", "routes", "{D7297D1B-FD86-4816-BA64-58715413B560}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\routes\router.tsx = frontend\src\routes\router.tsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "store", "store", "{754571F1-C2D0-4E8A-8077-5BC0D7AFCF09}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\store\auth-store.ts = frontend\src\store\auth-store.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "styles", "styles", "{1427F1D2-B539-4483-BB8C-8B453B382289}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\styles\index.css = frontend\src\styles\index.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "types", "types", "{EF3B5140-D443-4E00-B5CE-AF82B47B77E9}"
+	ProjectSection(SolutionItems) = preProject
+		frontend\src\types\domain.ts = frontend\src\types\domain.ts
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +123,20 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B8B0268B-D869-4862-AB5D-D28FC7CB4770} = {5EA7BCEA-ECDD-4063-9A7F-BDF23A4B1E2A}
+		{C3B1D18C-95BA-40D4-97C1-D25E4D33CC6C} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{710C7B32-7D7B-43CA-813D-20483DD73993} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{BC788AB2-D1B4-430A-BF8E-6A37A31D4759} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{17BB9910-16F2-4D52-B604-B76BD148FDB0} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{48E2E71A-ACF9-4C97-A6D3-E4921CCB125D} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{3D5EB3DC-CB0E-4894-8078-7E340A589D95} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{7D726B47-8C8C-43EA-AEFF-44B3A8D61333} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{D7297D1B-FD86-4816-BA64-58715413B560} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{754571F1-C2D0-4E8A-8077-5BC0D7AFCF09} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{1427F1D2-B539-4483-BB8C-8B453B382289} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
+		{EF3B5140-D443-4E00-B5CE-AF82B47B77E9} = {B8B0268B-D869-4862-AB5D-D28FC7CB4770}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7123AD06-C758-4769-BD59-7432EA37C341}

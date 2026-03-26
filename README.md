@@ -1,217 +1,172 @@
-# Aluguel de Carros — API REST
+# Aluguel de Carros
 
-Plataforma de aluguel de veículos baseada em reservas por categoria, com autenticação JWT, gestão de frota distribuída por branches e processamento de pagamentos simplificado.
+Plataforma de aluguel de veículos com backend ASP.NET Core e front-end React oficial na pasta frontend.
 
-**Status**: Phase 1 (MVP com dados mockados) | **Versão API**: v1 | **Stack**: .NET 8.0 + ASP.NET Core
+Estado atual do projeto:
 
----
+- API REST em .NET 8.
+- SPA React em TypeScript com Vite.
+- autenticação JWT.
+- RBAC com Customer e Admin.
+- dados mockados em JSON com operação principal em memória.
 
-## 🎯 Visão Geral
+## Visão Geral
 
-**O que é?**
-Sistema de gerenciamento de aluguel de veículos que permite clientes buscar, reservar e pagar pelo aluguel de carros, enquanto administradores gerenciam frota, categorias e preços.
+O produto cobre hoje:
 
-**Por que?**
-Validar o conceito de aluguel de carros como serviço via API, com suporte a múltiplos branches e categorias de veículos, antes de implementar persistência real em banco de dados.
+- autenticação e renovação de sessão.
+- catálogo público de veículos.
+- criação de reserva por categoria.
+- fluxo de pagamento com preauth, capture e refund.
+- área autenticada do cliente.
+- área administrativa para usuários, veículos e pricing rules.
 
-**Para quem?**
-- **Clientes:** Buscar e reservar carros pela web
-- **Administradores:** Gerenciar veículos, categorias e preços através da API
+Limites importantes:
 
-**Quando?**
-Phase 1 (MVP) — Dados em JSON, sem banco real. Phase 2+ → SQL + Entity Framework.
+- não existe banco relacional.
+- não existe listagem completa de pagamentos por reserva ou por usuário.
+- não existe módulo de check-in, check-out, promoções ou relatórios complexos.
 
----
+## Estrutura do Repositório
 
-## Tecnologias
-
-| Tecnologia | Versão |
-|---|---|
-| .NET SDK | 8.0 |
-| ASP.NET Core Web API | 8.0 |
-| JWT (Microsoft.AspNetCore.Authentication.JwtBearer) | 8.0.25 |
-| System.IdentityModel.Tokens.Jwt | 8.17.0 |
-| Swashbuckle.AspNetCore (Swagger) | 6.6.2 |
-
----
-
-## Estrutura de Pastas
-
-```
-AlugueldeCarros/
-├── Controllers/            # Endpoints da API (9 controllers)
-│   ├── AuthController.cs           # /api/v1/auth/*
-│   ├── UserController.cs           # /api/v1/users/*
-│   ├── AdminUsersController.cs     # /api/v1/admin/users/*
-│   ├── BranchesController.cs       # /api/v1/branches
-│   ├── VehiclesController.cs       # /api/v1/vehicles/*
-│   ├── AdminVehiclesController.cs  # /api/v1/admin/vehicles/*
-│   ├── PricingController.cs        # /api/v1/pricing/rules/*
-│   ├── ReservationsController.cs   # /api/v1/reservations/*
-│   └── PaymentsController.cs       # /api/v1/payments/*
-├── Services/               # Lógica de negócio (8 services)
-│   ├── AuthService.cs
-│   ├── UserService.cs
-│   ├── BranchService.cs
-│   ├── VehicleService.cs
-│   ├── VehicleCategoryService.cs
-│   ├── PricingService.cs
-│   ├── ReservationService.cs
-│   └── PaymentService.cs
-├── Repositories/           # Acesso a dados em memória (8 repositórios)
-│   ├── IUserRepository.cs          + InMemoryUserRepository
-│   ├── IVehicleRepository.cs       + InMemoryVehicleRepository
-│   ├── IVehicleCategoryRepository.cs + InMemoryVehicleCategoryRepository
-│   ├── IBranchRepository.cs        + InMemoryBranchRepository
-│   ├── IPricingRuleRepository.cs   + InMemoryPricingRuleRepository
-│   ├── IReservationRepository.cs   + InMemoryReservationRepository
-│   ├── IPaymentRepository.cs       + InMemoryPaymentRepository
-│   └── IRoleRepository.cs          + InMemoryRoleRepository
-├── Domain/
-│   ├── Entities/           # Modelos de domínio
-│   │   ├── User.cs, Role.cs, UserRole.cs, CustomerProfile.cs
-│   │   ├── Vehicle.cs, VehicleCategory.cs, Branch.cs
-│   │   ├── Reservation.cs, Payment.cs, PricingRule.cs
-│   └── Enums/
-│       ├── ReservationStatus.cs    # PENDING_PAYMENT, CONFIRMED, CANCELLED, EXPIRED
-│       ├── PaymentStatus.cs        # PENDING, APPROVED, DECLINED, REFUNDED
-│       ├── VehicleStatus.cs        # AVAILABLE, RESERVED, RENTED, MAINTENANCE, BLOCKED
-│       └── UserRoleType.cs
-├── DTOs/
-│   ├── Auth/               # LoginRequest, RegisterRequest, AuthResponse
-│   ├── Users/              # AddUserRolesRequest
-│   ├── Vehicles/           # VehicleDto, CreateVehicleRequest, UpdateVehicleRequest
-│   ├── Reservations/       # CreateReservationRequest, UpdateReservationRequest
-│   └── Payments/           # PreauthRequest, CaptureRequest, RefundRequest
-├── Security/               # JwtTokenService, PasswordHasher (SHA256)
-├── Configurations/         # JwtSettings
-├── Middleware/              # ExceptionHandlingMiddleware
-├── Loaders/                # JsonDataLoader (carrega mocks na inicialização)
-├── Resources/MockData/     # Arquivos JSON com dados de teste
-│   ├── users.json, roles.json, user-roles.json
-│   ├── branches.json, vehicles.json, vehicle-categories.json
-│   ├── pricing-rules.json, reservations.json, payments.json
-├── Program.cs              # Configuração DI, JWT, Swagger, pipeline
-└── appsettings.json        # Configurações gerais e JWT
+```text
+.
+├── .ai/                       # contexto oficial do projeto
+├── AlugueldeCarros/           # backend ASP.NET Core Web API
+├── AlugueldeCarros.Tests/     # testes do backend
+├── frontend/                  # aplicação React com Vite, src e configs
+└── README.md
 ```
 
----
+## Stack
 
-## Endpoints da API
+### Backend
 
-### Autenticação e Usuários
+- .NET 8
+- ASP.NET Core Web API
+- Microsoft.AspNetCore.Authentication.JwtBearer 8.0.25
+- Swashbuckle.AspNetCore 6.6.2
+- System.IdentityModel.Tokens.Jwt 8.17.0
+- BCrypt.Net-Next 4.1.0
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| POST | `/api/v1/auth/register` | Cadastro de novo usuário | Público |
-| POST | `/api/v1/auth/login` | Login (retorna JWT) | Público |
-| POST | `/api/v1/auth/refresh` | Renovar token JWT | Público |
-| GET | `/api/v1/users/me` | Perfil do usuário autenticado | Bearer |
-| GET | `/api/v1/users/me/reservations` | Reservas do usuário autenticado | Bearer |
-| GET | `/api/v1/admin/users` | Listar todos os usuários | Admin |
-| POST | `/api/v1/admin/users/{id}/roles` | Atribuir roles a um usuário | Admin |
+### Front-end
 
-### Catálogo / Frota
+- React 19
+- TypeScript 5
+- Vite 6
+- React Router 7
+- TanStack Query 5
+- Zustand 5
+- React Hook Form 7
+- Zod 3
+- Tailwind CSS 3
+- Axios 1
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| GET | `/api/v1/branches` | Listar filiais | Público |
-| GET | `/api/v1/vehicles/categories` | Listar categorias de veículos | Público |
-| GET | `/api/v1/vehicles/search` | Buscar veículos disponíveis | Público |
-| GET | `/api/v1/vehicles/{id}` | Detalhes de um veículo | Público |
-| POST | `/api/v1/admin/vehicles` | Cadastrar novo veículo | Admin |
-| PATCH | `/api/v1/admin/vehicles/{id}` | Atualizar veículo | Admin |
+## Endpoints Reais da API
 
-**Parâmetros de busca** (`/vehicles/search`):
-- `branchId` — filial
-- `from` / `to` (ou `startDate` / `endDate`) — período
-- `categoryId` — categoria
-- `priceMin` / `priceMax` — faixa de preço
+### Auth
 
-### Preços
+- POST /api/v1/auth/register
+- POST /api/v1/auth/login
+- POST /api/v1/auth/refresh
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| GET | `/api/v1/pricing/rules` | Listar regras de preço | Público |
-| GET | `/api/v1/pricing/rules/{id}` | Detalhe de uma regra | Público |
-| POST | `/api/v1/pricing/rules` | Criar regra de preço | Admin |
-| PATCH | `/api/v1/pricing/rules/{id}` | Atualizar regra de preço | Admin |
+### Usuário
+
+- GET /api/v1/users/me
+- GET /api/v1/users/me/reservations
+- GET /api/v1/admin/users
+- POST /api/v1/admin/users/{id}/roles
+
+### Catálogo e frota
+
+- GET /api/v1/branches
+- GET /api/v1/vehicles/categories
+- GET /api/v1/vehicles/search
+- GET /api/v1/vehicles/{id}
+- POST /api/v1/admin/vehicles
+- PATCH /api/v1/admin/vehicles/{id}
+
+### Pricing
+
+- GET /api/v1/pricing/rules
+- GET /api/v1/pricing/rules/{id}
+- POST /api/v1/pricing/rules
+- PATCH /api/v1/pricing/rules/{id}
 
 ### Reservas
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| POST | `/api/v1/reservations` | Criar reserva | Bearer |
-| GET | `/api/v1/reservations/{id}` | Detalhe da reserva | Bearer (dono ou Admin) |
-| PATCH | `/api/v1/reservations/{id}` | Atualizar reserva | Bearer (dono ou Admin) |
-| POST | `/api/v1/reservations/{id}/cancel` | Cancelar reserva | Bearer (dono ou Admin) |
+- POST /api/v1/reservations
+- GET /api/v1/reservations/{id}
+- PATCH /api/v1/reservations/{id}
+- POST /api/v1/reservations/{id}/cancel
 
 ### Pagamentos
 
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| POST | `/api/v1/payments/preauth` | Pré-autorizar pagamento | Bearer (dono ou Admin) |
-| POST | `/api/v1/payments/capture` | Capturar pagamento | Bearer (dono ou Admin) |
-| POST | `/api/v1/payments/refund` | Reembolsar pagamento | Bearer (dono ou Admin) |
-| GET | `/api/v1/payments/{id}` | Detalhe do pagamento | Bearer (dono ou Admin) |
+- POST /api/v1/payments/preauth
+- POST /api/v1/payments/capture
+- POST /api/v1/payments/refund
+- GET /api/v1/payments/{id}
 
----
+## Regras Técnicas e de Negócio Relevantes
 
-## Segurança
+- reserva é criada por categoria.
+- o front usa o veículo encontrado como contexto visual, não como contrato de criação.
+- reservas começam em PENDING_PAYMENT.
+- capture aprovada pode confirmar a reserva e reservar o veículo.
+- roles reais: Customer e Admin.
+- autenticação é por JWT Bearer.
+- senhas novas usam BCrypt; o login atual ainda aceita fallback em texto puro por compatibilidade com dados mockados existentes.
 
-### Autenticação JWT
-- Tokens gerados no login/registro com expiração de **60 minutos**.
-- Hash de senha: **SHA256** (Base64).
-- Configurações em `appsettings.json` → seção `JwtSettings`.
+## Front-end Oficial
 
-### Autorização (RBAC)
+### Áreas disponíveis
 
-| Role | Permissões |
-|------|------------|
-| **Customer** | Operações pessoais: perfil, reservas próprias, pagamentos próprios |
-| **Admin** | Tudo acima + gestão de usuários, veículos, categorias, preços |
+Públicas:
 
-- Endpoints administrativos protegidos por `[Authorize(Roles = "Admin")]`.
-- Endpoints de usuário protegidos por `[Authorize]` com validação de ownership.
-- Pagamentos validam que o usuário autenticado é dono da reserva associada (ou Admin).
+- /
+- /login
+- /catalogo
+- /catalogo/:vehicleId
 
----
+Customer:
 
-## Dados Mockados
+- /app/dashboard
+- /app/profile
+- /app/reservas
+- /app/reservas/:reservationId
+- /app/reservas/:reservationId/pagamento
 
-Dados de teste em `Resources/MockData/` carregados na inicialização via `JsonDataLoader`.
+Admin:
 
-### Credenciais de Teste
+- /admin/dashboard
+- /admin/users
+- /admin/vehicles
+- /admin/vehicles/new
+- /admin/vehicles/:vehicleId
+- /admin/pricing
 
-| Email | Senha | Role |
-|-------|-------|------|
-| `customer@example.com` | `123456` | Customer |
-| `admin@aluguel.com` | `admin123` | Admin |
+### Estratégia de autenticação no front
 
-### Arquivos Mock
+- JWT persistido no cliente.
+- refresh via /api/v1/auth/refresh quando o token se aproxima da expiração.
+- logout automático ao receber 401 da API.
+- menus e rotas protegidos por role.
 
-| Arquivo | Conteúdo |
-|---------|----------|
-| `users.json` | 3 usuários |
-| `roles.json` | Customer, Admin |
-| `user-roles.json` | Mapeamento usuário→role |
-| `branches.json` | 1 filial (Filial Centro) |
-| `vehicle-categories.json` | 2 categorias (Econômico, SUV) |
-| `vehicles.json` | 2 veículos (Fiat Uno, Toyota Corolla) |
-| `pricing-rules.json` | Regras de preço por categoria |
-| `reservations.json` | 3 reservas (IDs 1, 2, 10) |
-| `payments.json` | 3 pagamentos (IDs 1, 2, 10) |
+### Estratégia de integração
 
-> Alterações feitas via API ficam apenas em memória e são perdidas ao reiniciar (exceto `users.json` que é persistido).
+- Axios centralizado em frontend/src/api/http.ts.
+- TanStack Query para queries e mutations.
+- proxy do Vite para /api em desenvolvimento, apontando por padrão para http://localhost:5097.
 
----
-
-## Execução
+## Como rodar
 
 ### Pré-requisitos
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-### Comandos
+- .NET 8 SDK
+- Node.js 20+
+- npm 10+
+
+### Backend
 
 ```bash
 cd AlugueldeCarros
@@ -220,44 +175,100 @@ dotnet build
 dotnet run
 ```
 
-### URLs
+Backend local:
 
-| Recurso | URL |
-|---------|-----|
-| API (HTTPS) | `https://localhost:7110` |
-| API (HTTP) | `http://localhost:5097` |
-| Swagger UI | `https://localhost:7110/swagger` |
+- http://localhost:5097
+- https://localhost:7110
+- Swagger: https://localhost:7110/swagger
 
----
+### Front-end
 
-## Fluxo de Teste Completo
+Na pasta do front:
 
-1. **Login** → `POST /api/v1/auth/login` com credenciais mock
-2. **Copiar token** retornado no campo `token`
-3. **Authorize no Swagger** → clicar em "Authorize" e colar: `Bearer SEU_TOKEN`
-4. **Buscar veículos** → `GET /api/v1/vehicles/search?categoryId=1`
-5. **Criar reserva** → `POST /api/v1/reservations`
-6. **Pré-autorizar pagamento** → `POST /api/v1/payments/preauth`
-7. **Capturar pagamento** → `POST /api/v1/payments/capture`
-
-Para rotas **Admin**, faça login com `admin@aluguel.com` / `admin123`.
-
----
-
-## Arquitetura
-
-```
-Request → Controller → Service → Repository (InMemory) → JSON MockData
-                ↓
-          DTOs (Request/Response)
-                ↓
-          Domain Entities + Enums
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-- **Controllers**: recebem HTTP, validam input, delegam para Services.
-- **Services**: lógica de negócio, validações de domínio.
-- **Repositories**: interface + implementação in-memory com dados carregados de JSON.
-- **Middleware**: tratamento global de exceções (`ExceptionHandlingMiddleware`).
+Front local:
+
+- http://localhost:5173
+
+### Build do front
+
+```bash
+cd frontend
+npm run build
+```
+
+## Variáveis de Ambiente do Front
+
+Arquivo de referência:
+
+- frontend/.env.example
+
+Variáveis:
+
+- VITE_API_BASE_URL: base absoluta da API quando necessário.
+- VITE_PROXY_TARGET: alvo do proxy local do Vite. Padrão: http://localhost:5097.
+
+## Credenciais de Teste
+
+- customer@example.com / 123456
+- admin@aluguel.com / admin123
+
+## Dados Mockados
+
+Arquivos em AlugueldeCarros/Resources/MockData:
+
+- users.json
+- roles.json
+- user-roles.json
+- branches.json
+- vehicle-categories.json
+- vehicles.json
+- pricing-rules.json
+- reservations.json
+- payments.json
+
+Observação:
+
+- a maior parte das mudanças permanece em memória durante a execução.
+- users.json é persistido pelo repositório de usuários.
+
+## UX por Perfil
+
+Customer:
+
+- consulta catálogo.
+- cria reserva.
+- acompanha status.
+- executa pagamento.
+- remarca ou cancela quando permitido.
+
+Admin:
+
+- acompanha visão operacional.
+- atribui roles.
+- cria e edita veículos.
+- cria e edita pricing rules.
+
+## Validação Atual
+
+Validações já executadas no projeto:
+
+- suíte do backend aprovada anteriormente.
+- build do front executado com sucesso via npm run build.
+
+## Documentação de Contexto
+
+Consulte a pasta .ai para reconstrução fiel do sistema:
+
+- .ai/architecture.md
+- .ai/business-rules.md
+- .ai/standards.md
+- .ai/tech-stack.md
 - **DI**: todos os repositórios registrados como `Singleton`, services como `Scoped`.
 
 ---
