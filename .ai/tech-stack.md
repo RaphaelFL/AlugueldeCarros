@@ -480,18 +480,70 @@ if (_passwordHasher.Verify(providedPassword, storedHash))
 
 ---
 
-## 9. REGRAS PARA TESTES (Futuro)
+## 9. STACK DE TESTES
+
+### 9.1 Frameworks Obrigatórios
+
+| Pacote | Versão | Uso |
+|--------|--------|-----|
+| xUnit | 2.6+ | Framework de testes |
+| FluentAssertions | 6.12+ | Assertions legíveis |
+| Moq | 4.20+ | Mocking library |
+| Microsoft.AspNetCore.Mvc.Testing | 8.0+ | WebApplicationFactory built-in |
+
+### 9.2 Não Usar
 
 ```
-Framework:               xUnit (recomendado) ou NUnit
-Mocking:                 Moq
-Test Data:               Builder pattern ou fixtures
-Coverage:                Mínimo 70%
-CI/CD:                   GitHub Actions (futuro)
-
-Não implementar tests agora (Phase 1).
-Preparar estrutura por padrão (TestProject folder).
+❌ NUnit (verbose)
+❌ Should (deprecado)
+❌ AutoMocker (overkill)
+❌ TestServer + IIS (use WebApplicationFactory)
+❌ Entity Framework InMemory (mockar repositories)
+❌ GitHub Actions (Phase 2+)
 ```
+
+### 9.3 Estrutura de Projeto
+
+```
+tests/AlugueldeCarros.Tests/
+├── AlugueldeCarros.Tests.csproj
+├── Unit/Services/
+├── Unit/Security/
+├── Integration/Controllers/
+├── Integration/Endpoints/
+└── Fixtures/
+```
+
+### 9.4 Execução CLI
+
+```bash
+# Rodar todos os testes
+dotnet test tests/AlugueldeCarros.Tests.csproj
+
+# Teste específico
+dotnet test --filter "ClassName=UserServiceTests"
+
+# Watch mode
+dotnet test --watch
+
+# Verbose
+dotnet test -v d
+```
+
+### 9.5 Cobertura
+
+```
+Services:     80%+
+Controllers:  70%+
+Security:     90%+
+Repository:   60%+
+DTOs/Enums:   0%
+```
+
+### 9.6 Sem CI/CD
+
+Phase 1 = Testes locais apenas
+GitHub Actions adicionado em Phase 2+
 
 ---
 

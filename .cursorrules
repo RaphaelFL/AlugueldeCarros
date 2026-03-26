@@ -320,6 +320,71 @@ Exemplo:
 
 ---
 
+## REGRAS PARA TESTES (TDD)
+
+### Obrigações ao Implementar Testes
+
+```
+✅ Ler tech-stack.md seção 9 (Stack de Testes)
+✅ Ler standards.md seção 15 (Padrões de Testes)
+✅ Ler architecture.md seção 12 (Testes e Qualidade)
+✅ Ler business-rules.md seção 15 (Cobertura de Testes)
+✅ Usar xUnit + FluentAssertions + Moq obrigatoriamente
+✅ Criar projeto tests/AlugueldeCarros.Tests/
+✅ Organizar em: Unit/Services/, Unit/Security/, Integration/, Fixtures/
+✅ Nomenclatura: {MethodName}_{Scenario}_{ExpectedResult}
+✅ Usar padrão AAA (Arrange → Act → Assert)
+✅ Isolar testes (sem estado compartilhado entre tests)
+✅ Mockar dependências externas (repos, services, etc)
+✅ NUNCA testar DTOs, Entities, Enums
+✅ NUNCA testar código do framework (JWT, DI, etc)
+✅ NUNCA usar bancos reais (mock obrigatório)
+```
+
+### Stack Obrigatório de Testes
+
+```
+xUnit               → Framework nativo .NET
+FluentAssertions    → Assertions legíveis (should.Be → Should().Be)
+Moq                 → Mocking library padrão
+WebApplicationFactory → Testes HTTP (ASP.NET Core built-in)
+```
+
+### Cobertura Mínima
+
+```
+Services:      80%+  (AuthService, UserService, ReservationService, etc)
+Controllers:   70%+  (autenticação, autorização, status HTTP)
+Security:      90%+  (JWT, RBAC)
+Repositories:  60%+  (mock data)
+DTOs/Enums:    0%    (não testam estrutura)
+```
+
+### Execução de Testes (Local)
+
+```bash
+# Todos os testes
+dotnet test tests/AlugueldeCarros.Tests.csproj
+
+# Teste específico
+dotnet test --filter "ClassName=UserServiceTests"
+
+# Watch mode (dev)
+dotnet test --watch
+
+# Verbose
+dotnet test -v d
+```
+
+### Sem CI/CD em Phase 1
+
+```
+Phase 1:  ✅ Testes locais (dotnet test)
+Phase 2+: ⏳ GitHub Actions (futuro)
+```
+
+---
+
 ## FLUXO DE IMPLEMENTAÇÃO
 
 ### Para Cada Task

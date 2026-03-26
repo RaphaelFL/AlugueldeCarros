@@ -678,6 +678,132 @@ payments.json
 
 ---
 
+## 15. COBERTURA DE TESTES
+
+### 15.1 Cenários Críticos por Endpoint
+
+**POST /api/v1/auth/register**
+```
+✅ Usuário novo com dados válidos → Criado com sucesso
+✅ Email duplicado → Erro 409 Conflict
+✅ Password < 8 chars → Erro 400 Bad Request
+✅ Email vazio → Erro 400 Bad Request
+```
+
+**POST /api/v1/auth/login**
+```
+✅ Credenciais válidas → Token JWT retornado
+✅ Email não existe → Erro 401 Unauthorized
+✅ Password incorreto → Erro 401 Unauthorized
+✅ Email/Password vazios → Erro 400 Bad Request
+```
+
+**GET /api/v1/vehicles (Search)**
+```
+✅ Sem filtros → Lista todos disponíveis
+✅ Filtro categoria válida → Lista filtrada
+✅ Filtro branch válida → Lista por branch
+✅ Datas inválidas (EndDate < StartDate) → Erro 400
+✅ Sem veículos disponíveis → Lista vazia (200 OK, não 404)
+```
+
+**POST /api/v1/reservations**
+```
+✅ Dados válidos, veículo disponível → Reserva criada (PENDING_PAYMENT)
+✅ Usuário já tem 5 reservas ativas → Erro 409 Conflict
+✅ Veículo não disponível na data → Erro 409 Conflict
+✅ EndDate < StartDate → Erro 400 Bad Request
+✅ Sem autenticação → Erro 401 Unauthorized
+```
+
+**PATCH /api/v1/reservations/{id}/cancel**
+```
+✅ Cancelamento < 2 horas (~início) → Refund 100% (REFUNDED)
+✅ Cancelamento > 2 horas → Sem refund (CANCELLED)
+✅ Reserva não existe → Erro 404 Not Found
+✅ Reserva já cancelada → Erro 409 Conflict
+✅ Sem autenticação → Erro 401 Unauthorized
+```
+
+**POST /api/v1/payments/preauth**
+```
+✅ Dados válidos, valor > 0 → Preauth criado (APPROVED ou DECLINED)
+✅ Heurística (90/10): 90% APPROVED, 10% DECLINED
+✅ Valor = 0 → Erro 400 Bad Request
+✅ Reserva não existe → Erro 404 Not Found
+```
+
+**DELETE /api/v1/admin/users/{id}** (ADMIN only)
+```
+✅ ADMIN token válido → Usuário deletado (200/204)
+✅ USER token (não-admin) → Erro 403 Forbidden
+✅ Token expirado → Erro 401 Unauthorized
+✅ Usuário não existe → Erro 404 Not Found
+```
+
+**POST /api/v1/admin/vehicles**
+```
+✅ ADMIN, dados válidos → Veículo criado
+✅ USER token → Erro 403 Forbidden
+✅ Categoria não existe → Erro 400/404
+✅ Branch não existe → Erro 400/404
+```
+
+### 15.2 Mapeamento de Cenários
+
+| Endpoint | Happy Path | Validação | Autenticação | Autorização | Edge Cases |
+|----------|-----------|-----------|--------------|-------------|------------|
+| POST /auth/register | 1 | 3 | - | - | 1 |
+| POST /auth/login | 1 | 3 | - | - | 1 |
+| GET /vehicles | 1 | 3 | ✓* | - | 2 |
+| POST /reservations | 1 | 2 | ✓ | ✓ | 1 |
+| PATCH /reservations/{id}/cancel | 2 | 2 | ✓ | ✓ | 0 |
+| POST /payments/preauth | 1 | 2 | ✓ | ✓ | 1 |
+| DELETE /admin/users/{id} | 1 | 1 | ✓ | ✓ | 1 |
+| POST /admin/vehicles | 1 | 2 | ✓ | ✓ | 0 |
+
+*GET /vehicles é público (sem token)
+
+### 15.3 Casos de Uso Críticos
+
+**ReservationService.CreateAsync()**
+```
+→ Validar 5-reserva limit (em MemoryRepository)
+→ Validar disponibilidade de veículo
+→ Validação de datas
+→ Criar pagamento pré-autorizado (mock 90/10)
+→ Retornar reserva com status PENDING_PAYMENT
+```
+
+**PaymentService.PreauthorizeAsync()**
+```
+→ Mock determinístico: 90% APPROVED, 10% DECLINED
+→ Usar seed baseado em Guid da reserva
+→ Atualizar status de payment
+→ Retornar resultado previsível em testes
+```
+
+**ExceptionHandlingMiddleware**
+```
+→ Capturar exceptions não-tratadas
+→ Retornar formato padrão (error code + message)
+→ Logar erro com contexto
+→ Retornar 500 para erros inesperados
+```
+
+### 15.4 Quantidade de Testes Esperada
+
+```
+Unit/Services:       80+ testes (10+ por service)
+Unit/Security:       15+ testes (JWT + RBAC)
+Integration:         40+ testes (5+ por controller)
+Fixtures:            N/A (não testados)
+
+TOTAL:              ~135+ testes (phase 1 complete)
+```
+
+---
+
 ## 14. AUTENTICAÇÃO E TOKENS JWT
 
 ### 14.1 Payload do Token

@@ -1013,7 +1013,112 @@ Toda mudança DEVE:
 
 ---
 
-## 15. CHANGELOG
+## 15. PADRÕES DE TESTES
+
+### 15.1 Padrão AAA (Arrange-Act-Assert)
+
+```csharp
+[Fact]
+public async Task CreateReservation_ValidRequest_ReturnsReservationWithPendingPaymentStatus()
+{
+    // Arrange
+    var userId = Guid.NewGuid();
+    var request = new CreateReservationRequest
+    {
+        UserId = userId,
+        VehicleCategoryId = Guid.NewGuid(),
+        StartDate = DateTime.UtcNow.AddDays(1),
+        EndDate = DateTime.UtcNow.AddDays(3)
+    };
+
+    // Act
+    var result = await _reservationService.CreateAsync(request);
+
+    // Assert
+    result.Should().NotBeNull();
+    result.Status.Should().Be(ReservationStatus.PENDING_PAYMENT);
+    result.UserId.Should().Be(userId);
+}
+```
+
+### 15.2 Nomenclatura de Testes
+
+**Padrão**: `{MethodName}_{Scenario}_{ExpectedResult}`
+
+```csharp
+public class UserServiceTests
+{
+    [Fact]
+    public async Task Login_ValidCredentials_ReturnsJwtToken() { }
+
+    [Fact]
+    public async Task Login_InvalidPassword_ThrowsUnauthorizedException() { }
+
+    [Theory]
+    [InlineData("invalid@")]
+    [InlineData("")]
+    public async Task Register_InvalidEmail_ThrowsValidationException(string email) { }
+}
+```
+
+### 15.3 TestDataBuilder
+
+```csharp
+public class TestDataBuilder
+{
+    private User _user;
+
+    public TestDataBuilder WithUser(string email = "test@email.com")
+    {
+        _user = new User { Id = Guid.NewGuid(), Email = email };
+        return this;
+    }
+
+    public User BuildUser() => _user;
+}
+
+// Uso:
+var user = new TestDataBuilder().WithUser("admin@test.com").BuildUser();
+```
+
+### 15.4 Regras de Testes
+
+```
+✅ Testar Happy Path + Unhappy Paths
+✅ Testar Autenticação e Autorização
+✅ Testar Limites de negócio (ex: 5 reservas)
+✅ Nomear descritivamente
+✅ Mockar dependências externas
+✅ Isolar testes (sem estado compartilhado)
+
+❌ NUNCA testar DTOs, Entities, Enums
+❌ NUNCA testar framework code (JWT, DI)
+❌ NUNCA usar bancos reais (mock obrigatório)
+❌ NUNCA deixar código comentado
+```
+
+### 15.5 Mocking com Moq
+
+```csharp
+[Fact]
+public async Task CreateUser_CallsRepository_OnSuccess()
+{
+    var mockRepo = new Mock<IUserRepository>();
+    var service = new UserService(mockRepo.Object);
+
+    mockRepo
+        .Setup(r => r.AddAsync(It.IsAny<User>()))
+        .ReturnsAsync(true);
+
+    var result = await service.CreateAsync(request);
+
+    mockRepo.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
+}
+```
+
+---
+
+## 16. CHANGELOG
 
 | Data | Evento | Descrição |
 |------|--------|-----------|

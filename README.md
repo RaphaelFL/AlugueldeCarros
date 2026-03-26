@@ -271,3 +271,74 @@ Request → Controller → Service → Repository (InMemory) → JSON MockData
 | Dados não carregam | Confirme que `Resources/MockData/*.json` existem e têm conteúdo válido |
 | Token expirado | Faça login novamente ou use `POST /api/v1/auth/refresh` |
 | 403 Forbidden | Verifique se o usuário tem a role necessária (Customer vs Admin) |
+
+---
+
+## Testes
+
+### Estrutura
+
+```
+tests/AlugueldeCarros.Tests/
+├── Unit/
+│   ├── Services/          (8 classes de teste)
+│   └── Security/          (JWT + RBAC)
+├── Integration/
+│   ├── Controllers/       (9 controllers)
+│   └── Endpoints/
+└── Fixtures/
+    ├── TestDataBuilder.cs
+    ├── JwtTokenFixture.cs
+    └── WebApplicationFactoryFixture.cs
+```
+
+### Stack
+
+- **xUnit** — Framework de testes
+- **FluentAssertions** — Assertions legíveis
+- **Moq** — Mocking de dependências
+- **WebApplicationFactory** — Testes HTTP
+
+### Executar Testes
+
+```bash
+# Todos os testes
+dotnet test tests/AlugueldeCarros.Tests.csproj
+
+# Teste específico
+dotnet test --filter "ClassName=UserServiceTests"
+
+# Watch mode
+dotnet test --watch
+```
+
+### Cobertura
+
+- **Services**: 80%+ (lógica crítica)
+- **Controllers**: 70%+ (HTTP + autenticação)
+- **Security**: 90%+ (JWT, RBAC)
+- **Repositories**: 60%+ (mock data)
+- **DTOs/Enums**: 0% (não testam estrutura)
+
+### Padrão AAA
+
+```csharp
+[Fact]
+public async Task LoginUser_ValidCredentials_ReturnsJwtToken()
+{
+    // Arrange
+    var request = new LoginRequest { Email = "user@test.com", Password = "Test@123" };
+
+    // Act
+    var result = await _authService.LoginAsync(request);
+
+    // Assert
+    result.Should().NotBeNull();
+    result.Token.Should().NotBeEmpty();
+}
+```
+
+### Sem CI/CD
+
+Phase 1 = Testes locais apenas (`dotnet test`)  
+Phase 2+ = GitHub Actions (futuro)

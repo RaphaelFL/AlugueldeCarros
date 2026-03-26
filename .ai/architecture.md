@@ -775,7 +775,80 @@ Busca Avançada
 
 ---
 
-## 12. CHANGELOG
+## 12. TESTES E QUALIDADE
+
+### 12.1 Pirâmide de Testes
+
+```
+    △ E2E (5%)
+   △△ Integration (25%)
+  △△△ Unit (70%)
+```
+
+- **Unit (70%)**: Testes isolados de services, security
+- **Integration (25%)**: Testes de controllers via WebApplicationFactory
+- **E2E (5%)**: Manual ou ferramentas específicas (Phase 2+)
+
+### 12.2 Stack de Testes
+
+```
+xUnit              → Framework nativo .NET
+FluentAssertions   → Asserções legíveis
+Moq                → Mocking minimal
+WebApplicationFactory → Testes HTTP (ASP.NET Core built-in)
+```
+
+### 12.3 Estrutura de Diretórios
+
+```
+tests/AlugueldeCarros.Tests/
+├── Unit/Services/        (6+ test files)
+├── Unit/Security/        (JWT + RBAC tests)
+├── Integration/          (Controller tests)
+└── Fixtures/             (Builders, test data)
+```
+
+### 12.4 Cobertura Mínima
+
+| Módulo | Target | Crítico |
+|--------|--------|----------|
+| Services | 80%+ | Sim |
+| Controllers | 70%+ | Sim |
+| Security | 90%+ | Sim |
+| Repositories | 60%+ | Não |
+
+### 12.5 Execução Local
+
+```bash
+# Todos os testes
+dotnet test tests/AlugueldeCarros.Tests.csproj
+
+# Classe específica
+dotnet test --filter "ClassName=UserServiceTests"
+
+# Watch mode
+dotnet test --watch
+```
+
+### 12.6 Ciclo de Desenvolvimento
+
+```
+1. Escrever teste (RED)
+2. Escrever código mínimo para passar (GREEN)
+3. Refatorar mantendo testes verdes (REFACTOR)
+4. Repetir para próximo teste
+```
+
+### 12.7 Sem CI/CD em Phase 1
+
+```
+Phase 1:  Testes locais apenas (dotnet test)
+Phase 2+: GitHub Actions + codecov (futuro)
+```
+
+---
+
+## 13. CHANGELOG
 
 | Data | Evento | Descrição |
 |------|--------|-----------|
