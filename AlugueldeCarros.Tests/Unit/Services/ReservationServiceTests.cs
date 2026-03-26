@@ -305,4 +305,71 @@ public class ReservationServiceTests
 
         _reservationRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
     }
+
+    [Fact]
+    public async Task CancelReservationAsync_WithCheckInInFiveDays_CreatesEightyPercentRefund()
+    {
+        var reservation = new Reservation
+        {
+            Id = 12,
+            UserId = 1,
+            Status = ReservationStatus.CONFIRMED,
+            StartDate = DateTime.UtcNow.AddDays(5),
+            EndDate = DateTime.UtcNow.AddDays(7),
+            TotalAmount = 1000m
+        };
+        Payment? capturedPayment = null;
+
+        _reservationRepositoryMock
+            .Setup(r => r.GetByIdAsync(reservation.Id))
+            .ReturnsAsync(reservation);
+
+        _reservationRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+            .Returns(Task.CompletedTask);
+
+        _paymentRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<Payment>()))
+            .Callback<Payment>(payment => capturedPayment = payment)
+            .Returns(Task.CompletedTask);
+
+        await _reservationService.CancelReservationAsync(reservation.Id);
+
+        capturedPayment.Should().NotBeNull();
+        capturedPayment!.Amount.Should().Be(800m);
+        capturedPayment.Status.Should().Be(PaymentStatus.REFUNDED);
+    }
+
+    [Fact]
+    public async Task CancelReservationAsync_WithCheckInInTwelveHours_CreatesZeroRefund()
+    {
+        var reservation = new Reservation
+        {
+            Id = 13,
+            UserId = 1,
+            Status = ReservationStatus.CONFIRMED,
+            StartDate = DateTime.UtcNow.AddHours(12),
+            EndDate = DateTime.UtcNow.AddDays(2),
+            TotalAmount = 700m
+        };
+        Payment? capturedPayment = null;
+
+        _reservationRepositoryMock
+            .Setup(r => r.GetByIdAsync(reservation.Id))
+            .ReturnsAsync(reservation);
+
+        _reservationRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+            .Returns(Task.CompletedTask);
+
+        _paymentRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<Payment>()))
+            .Callback<Payment>(payment => capturedPayment = payment)
+            .Returns(Task.CompletedTask);
+
+        await _reservationService.CancelReservationAsync(reservation.Id);
+
+        capturedPayment.Should().NotBeNull();
+        capturedPayment!.Amount.Should().Be(0m);
+    }
 }

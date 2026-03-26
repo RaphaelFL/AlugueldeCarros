@@ -79,6 +79,30 @@ public class AuthServiceTests
         _userRepositoryMock.Verify(r => r.GetByEmailAsync(email), Times.Once);
     }
 
+    [Fact]
+    public async Task LoginAsync_WithPlainTextStoredPassword_ReturnsJwtToken()
+    {
+        var email = "legacy@test.com";
+        var password = "legacy123";
+        var user = new User
+        {
+            Id = 11,
+            Email = email,
+            FirstName = "Legacy",
+            LastName = "User",
+            PasswordHash = password,
+            Roles = new List<string> { "Customer" }
+        };
+
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync(email))
+            .ReturnsAsync(user);
+
+        var result = await _authService.LoginAsync(email, password);
+
+        result.Should().NotBeNullOrWhiteSpace();
+    }
+
     #endregion
 
     #region Register Tests
@@ -195,6 +219,18 @@ public class AuthServiceTests
         _userRepositoryMock
             .Setup(r => r.GetByIdAsync(It.IsAny<int>()))
             .ReturnsAsync((User)null);
+
+        var act = async () => await _authService.RefreshAsync(token);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithTokenMissingNameIdentifier_ThrowsUnauthorizedAccessException()
+    {
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var token = handler.WriteToken(new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+            claims: new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, "user@test.com") }));
 
         var act = async () => await _authService.RefreshAsync(token);
 

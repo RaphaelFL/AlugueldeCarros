@@ -99,6 +99,79 @@ public class PaymentServiceTests
     }
 
     [Fact]
+    public async Task CapturePaymentAsync_WhenPaymentIsApproved_ConfirmsReservationAndReservesVehicle()
+    {
+        var reservation = _testDataBuilder.WithReservation().BuildReservation();
+        reservation.Id = 3;
+        reservation.VehicleId = 7;
+        reservation.Status = ReservationStatus.PENDING_PAYMENT;
+
+        var payment = _testDataBuilder.WithPayment().BuildPayment();
+        payment.Id = 8;
+        payment.ReservationId = reservation.Id;
+        payment.Status = PaymentStatus.PENDING;
+
+        var vehicle = _testDataBuilder.WithVehicle().BuildVehicle();
+        vehicle.Id = reservation.VehicleId.Value;
+        vehicle.Status = VehicleStatus.AVAILABLE;
+
+        _paymentRepositoryMock
+            .Setup(r => r.GetByIdAsync(payment.Id))
+            .ReturnsAsync(payment);
+
+        _paymentRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Payment>()))
+            .Returns(Task.CompletedTask);
+
+        _reservationRepositoryMock
+            .Setup(r => r.GetByIdAsync(reservation.Id))
+            .ReturnsAsync(reservation);
+
+        _reservationRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+            .Returns(Task.CompletedTask);
+
+        _vehicleRepositoryMock
+            .Setup(r => r.GetByIdAsync(vehicle.Id))
+            .ReturnsAsync(vehicle);
+
+        _vehicleRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Vehicle>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _paymentService.CapturePaymentAsync(payment.Id);
+
+        result.Status.Should().Be(PaymentStatus.APPROVED);
+        reservation.Status.Should().Be(ReservationStatus.CONFIRMED);
+        vehicle.Status.Should().Be(VehicleStatus.RESERVED);
+        _reservationRepositoryMock.Verify(r => r.UpdateAsync(reservation), Times.Once);
+        _vehicleRepositoryMock.Verify(r => r.UpdateAsync(vehicle), Times.Once);
+    }
+
+    [Fact]
+    public async Task CapturePaymentAsync_WhenPaymentIsDeclined_DoesNotChangeReservationOrVehicle()
+    {
+        var payment = _testDataBuilder.WithPayment().BuildPayment();
+        payment.Id = 9;
+        payment.ReservationId = 3;
+        payment.Status = PaymentStatus.PENDING;
+
+        _paymentRepositoryMock
+            .Setup(r => r.GetByIdAsync(payment.Id))
+            .ReturnsAsync(payment);
+
+        _paymentRepositoryMock
+            .Setup(r => r.UpdateAsync(It.IsAny<Payment>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _paymentService.CapturePaymentAsync(payment.Id);
+
+        result.Status.Should().Be(PaymentStatus.DECLINED);
+        _reservationRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _vehicleRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+    }
+
+    [Fact]
     public async Task CapturePaymentAsync_WithNonPendingPayment_ThrowsValidationException()
     {
         var paymentId = 1;

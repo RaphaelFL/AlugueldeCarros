@@ -164,6 +164,48 @@ public class VehicleServiceTests
     }
 
     [Fact]
+    public async Task SearchVehiclesAsync_WithBranchAndPriceRange_AppliesLocalFilters()
+    {
+        var vehicles = new List<Vehicle>
+        {
+            new() { Id = 1, Model = "Fiat Uno", BranchId = 1, CategoryId = 1, DailyRate = 50m, Status = VehicleStatus.AVAILABLE },
+            new() { Id = 2, Model = "SUV", BranchId = 2, CategoryId = 1, DailyRate = 150m, Status = VehicleStatus.AVAILABLE },
+            new() { Id = 3, Model = "Sedan", BranchId = 1, CategoryId = 2, DailyRate = 90m, Status = VehicleStatus.AVAILABLE }
+        };
+
+        _vehicleRepositoryMock
+            .Setup(r => r.GetAllAsync())
+            .ReturnsAsync(vehicles);
+
+        var result = await _vehicleService.SearchVehiclesAsync(1, null, null, null, 40m, 100m);
+
+        result.Should().HaveCount(2);
+        result.Should().OnlyContain(vehicle => vehicle.BranchId == 1 && vehicle.DailyRate >= 40m && vehicle.DailyRate <= 100m);
+    }
+
+    [Fact]
+    public async Task SearchVehiclesAsync_WithDateRange_UsesRepositoryAvailabilityResult()
+    {
+        var availableVehicle = new Vehicle { Id = 1, Model = "Fiat Uno", BranchId = 1, CategoryId = 1, DailyRate = 50m, Status = VehicleStatus.AVAILABLE };
+        var unavailableVehicle = new Vehicle { Id = 2, Model = "SUV", BranchId = 1, CategoryId = 1, DailyRate = 70m, Status = VehicleStatus.AVAILABLE };
+        var startDate = DateTime.UtcNow.AddDays(1);
+        var endDate = DateTime.UtcNow.AddDays(3);
+
+        _vehicleRepositoryMock
+            .Setup(r => r.GetAllAsync())
+            .ReturnsAsync(new List<Vehicle> { availableVehicle, unavailableVehicle });
+
+        _vehicleRepositoryMock
+            .Setup(r => r.SearchAsync(1, startDate, endDate))
+            .ReturnsAsync(new List<Vehicle> { availableVehicle });
+
+        var result = await _vehicleService.SearchVehiclesAsync(null, startDate, endDate, 1, null, null);
+
+        result.Should().ContainSingle(vehicle => vehicle.Id == availableVehicle.Id);
+        _vehicleRepositoryMock.Verify(r => r.SearchAsync(1, startDate, endDate), Times.Once);
+    }
+
+    [Fact]
     public async Task UpdateVehicleAsync_WithValidId_UpdatesAndReturnsVehicle()
     {
         var vehicleId = 1;
