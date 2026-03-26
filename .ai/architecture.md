@@ -438,6 +438,12 @@ Estado derivado que deve continuar no cliente:
 - sessão carregada a partir do token e de /api/v1/users/me.
 - cache de listas e detalhes via TanStack Query.
 
+Regra operacional importante para evitar erro de autenticação no front:
+
+- após login ou cadastro, o front deve usar imediatamente o token retornado pela API para carregar /api/v1/users/me.
+- essa chamada inicial a /users/me não deve depender apenas do token já ter sido persistido no store do cliente.
+- na reidratação da sessão, o bootstrap também deve usar explicitamente o token válido ao buscar /users/me.
+
 ### 10.5 Estratégia de Autenticação no Front
 
 O front:
@@ -447,6 +453,7 @@ O front:
 - tenta renovar a sessão usando o endpoint /api/v1/auth/refresh quando o token está perto de expirar.
 - encerra a sessão ao receber 401 do backend.
 - usa os claims e o perfil carregado em /api/v1/users/me para controlar navegação e menus.
+- após login, cadastro ou refresh, usa o token mais recente para buscar /api/v1/users/me antes de consolidar a sessão no estado persistido.
 
 Observação importante:
 
@@ -459,11 +466,16 @@ O cliente HTTP:
 - centraliza headers e tratamento de 401.
 - usa baseURL configurável por variável de ambiente.
 - em desenvolvimento, usa proxy do Vite para /api -> backend .NET local, evitando problema de CORS sem alterar a API.
+- o alvo padrão atual desse proxy deve ser o backend HTTPS local em https://localhost:7110.
 
 Variáveis de ambiente relevantes para reprodução:
 
 - VITE_API_BASE_URL para apontar diretamente para a API quando necessário.
 - VITE_PROXY_TARGET para definir o backend alvo do proxy local do Vite.
+
+Valor padrão esperado hoje:
+
+- VITE_PROXY_TARGET=https://localhost:7110.
 
 ### 10.7 Relação Entre Front e Back
 

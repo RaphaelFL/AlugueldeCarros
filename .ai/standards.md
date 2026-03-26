@@ -237,6 +237,7 @@ Padrão esperado para reprodução:
 
 - cada área principal deve continuar agrupada em public-pages.tsx, user-pages.tsx e admin-pages.tsx.
 - rotas principais devem continuar lazy-loaded.
+- login, cadastro e reidratação da sessão devem resolver o usuário autenticado usando o token mais recente, sem depender apenas do store já hidratado.
 
 ### 10.5 Padrão de Tratamento de Erro e Loading
 
@@ -245,6 +246,7 @@ No front:
 - erros da API devem priorizar response.data.error.
 - loading states precisam ser visíveis e não bloquear a navegação inteira sem necessidade.
 - estados vazios devem explicar a ausência de dados e apontar próxima ação.
+- um 401 em /api/v1/users/me logo após login normalmente indica fluxo incorreto de bootstrap da sessão, não ausência de permissão de negócio.
 
 ### 10.6 Padrão de Formulários
 

@@ -162,7 +162,7 @@ export function LoginPage() {
   const authMutation = useMutation({
     mutationFn: async (values: z.infer<typeof authSchema>) => {
       const auth = await authService.login(values);
-      const user = await authService.me();
+      const user = await authService.me(auth.token);
       setSession(auth.token, user);
       return user;
     },
@@ -175,7 +175,7 @@ export function LoginPage() {
   const registerMutation = useMutation({
     mutationFn: async (values: z.infer<typeof registerSchema>) => {
       const auth = await authService.register(values);
-      const user = await authService.me();
+      const user = await authService.me(auth.token);
       setSession(auth.token, user);
       return user;
     },

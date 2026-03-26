@@ -33,8 +33,14 @@ export const authService = {
     const { data } = await http.post<AuthResponse>('/api/v1/auth/refresh', token);
     return data;
   },
-  me: async () => {
-    const { data } = await http.get<SessionUser>('/api/v1/users/me');
+  me: async (token?: string) => {
+    const { data } = await http.get<SessionUser>('/api/v1/users/me', {
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
     return data;
   },
 };

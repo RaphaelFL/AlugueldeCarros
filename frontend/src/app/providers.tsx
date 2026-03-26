@@ -18,7 +18,7 @@ export function AppProviders({ router }: { router: ReturnType<typeof createBrows
     const bootstrap = async () => {
       try {
         const usableToken = isTokenExpired(token, 600) ? (await authService.refresh(token)).token : token;
-        const user = await authService.me();
+        const user = await authService.me(usableToken);
         setSession(usableToken, user);
       } catch {
         signOut();

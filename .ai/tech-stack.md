@@ -173,7 +173,7 @@ Stack adotada:
 Ambiente local observado hoje:
 
 - Vite roda na porta 5173.
-- proxy local de /api aponta por padrão para http://localhost:5097.
+- proxy local de /api aponta por padrão para https://localhost:7110.
 - esse alvo pode ser alterado por VITE_PROXY_TARGET.
 - o cliente HTTP usa VITE_API_BASE_URL quando configurado; se vazio, usa chamadas relativas.
 
@@ -189,6 +189,7 @@ Gerenciamento de dependências e ambiente:
 - refresh usando o endpoint existente /api/v1/auth/refresh.
 - leitura de claims do token para montar contexto de sessão.
 - fallback de logout em qualquer 401 retornado pelo backend.
+- após login, cadastro ou refresh, a chamada a /api/v1/users/me deve usar explicitamente o token mais recente quando necessário, em vez de depender apenas da persistência assíncrona do store.
 
 ### 11.3 Estratégia de Consumo HTTP
 
@@ -201,6 +202,10 @@ Variáveis de ambiente relevantes:
 
 - VITE_API_BASE_URL
 - VITE_PROXY_TARGET
+
+Valor padrão de referência:
+
+- VITE_PROXY_TARGET=https://localhost:7110
 
 ### 11.4 Bibliotecas Permitidas no Front
 

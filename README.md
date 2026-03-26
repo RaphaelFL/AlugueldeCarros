@@ -193,7 +193,7 @@ Estratégia de integração:
 
 - Axios centralizado em `frontend/src/api/http.ts`
 - TanStack Query para queries e mutations
-- proxy do Vite para `/api`, apontando por padrão para `http://localhost:5097`
+- proxy do Vite para `/api`, apontando por padrão para `https://localhost:7110`
 
 Variáveis de ambiente de referência em [frontend/.env.example](frontend/.env.example):
 
@@ -271,6 +271,7 @@ Stack de testes do backend:
 | Build falha | Verifique se o .NET 8 SDK está instalado e se não há o executável bloqueado por uma instância em execução |
 | Dados não carregam | Confirme a existência de `Resources/MockData/*.json` |
 | Token expirado | Faça login novamente ou use `POST /api/v1/auth/refresh` |
+| Front recebe 500 ao chamar `/api/*` | Verifique se o backend está rodando em `https://localhost:7110` ou ajuste `VITE_PROXY_TARGET` |
 | Front não alcança a API | Verifique `VITE_PROXY_TARGET` ou `VITE_API_BASE_URL` |
 
 ## Documentação de Contexto
