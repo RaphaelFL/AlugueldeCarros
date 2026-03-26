@@ -6,7 +6,7 @@ Estado atual do projeto:
 
 - API REST em .NET 8.
 - SPA React em TypeScript com Vite.
-- autenticação JWT.
+- autenticação JWT Bearer.
 - RBAC com Customer e Admin.
 - dados mockados em JSON com operação principal em memória.
 
@@ -31,53 +31,107 @@ Limites importantes:
 
 ```text
 .
-├── .ai/                       # contexto oficial do projeto
+├── .ai/                       # contexto operacional do projeto
 ├── AlugueldeCarros/           # backend ASP.NET Core Web API
 ├── AlugueldeCarros.Tests/     # testes do backend
-├── frontend/                  # aplicação React com Vite, src e configs
+├── frontend/                  # SPA React com Vite
 └── README.md
 ```
 
-## Stack
+## Como Rodar
+
+### Pré-requisitos
+
+- .NET 8 SDK
+- Node.js 20+
+- npm 10+
 
 ### Backend
 
-- .NET 8
-- ASP.NET Core Web API
-- Microsoft.AspNetCore.Authentication.JwtBearer 8.0.25
-- Swashbuckle.AspNetCore 6.6.2
-- System.IdentityModel.Tokens.Jwt 8.17.0
-- BCrypt.Net-Next 4.1.0
+```bash
+cd AlugueldeCarros
+dotnet restore
+dotnet build
+dotnet run
+```
+
+Backend local:
+
+- http://localhost:5097
+- https://localhost:7110
+- Swagger: https://localhost:7110/swagger
+
+Observação de execução no Visual Studio:
+
+- o perfil principal para abrir Swagger é o https.
+- os perfis http e IIS Express não abrem navegador automaticamente.
 
 ### Front-end
 
-- React 19
-- TypeScript 5
-- Vite 6
-- React Router 7
-- TanStack Query 5
-- Zustand 5
-- React Hook Form 7
-- Zod 3
-- Tailwind CSS 3
-- Axios 1
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Endpoints Reais da API
+Front local:
 
-### Auth
+- http://localhost:5173
+
+### Build
+
+```bash
+cd AlugueldeCarros
+dotnet build
+
+cd ../frontend
+npm run build
+```
+
+## API
+
+### Autenticação
+
+- esquema: JWT Bearer
+- usar o botão Authorize do Swagger com o formato `Bearer TOKEN`
+- roles reais: Customer e Admin
+
+Credenciais de teste:
+
+- customer@example.com / 123456
+- admin@aluguel.com / admin123
+
+### Fluxo principal da API
+
+1. autenticar em `POST /api/v1/auth/login` ou registrar em `POST /api/v1/auth/register`
+2. consultar catálogo em `GET /api/v1/vehicles/search`
+3. criar reserva por categoria em `POST /api/v1/reservations`
+4. executar preauth em `POST /api/v1/payments/preauth`
+5. capturar em `POST /api/v1/payments/capture`
+
+Regras importantes:
+
+- reserva é criada por categoria, não por veículo escolhido pelo cliente.
+- reservas começam em `PENDING_PAYMENT`.
+- captura aprovada pode confirmar a reserva e marcar o veículo como `RESERVED`.
+- ownership de reservas e pagamentos é validado no fluxo HTTP.
+
+### Endpoints reais
+
+#### Auth
 
 - POST /api/v1/auth/register
 - POST /api/v1/auth/login
 - POST /api/v1/auth/refresh
 
-### Usuário
+#### Usuário
 
 - GET /api/v1/users/me
 - GET /api/v1/users/me/reservations
 - GET /api/v1/admin/users
 - POST /api/v1/admin/users/{id}/roles
 
-### Catálogo e frota
+#### Catálogo e frota
 
 - GET /api/v1/branches
 - GET /api/v1/vehicles/categories
@@ -86,40 +140,30 @@ Limites importantes:
 - POST /api/v1/admin/vehicles
 - PATCH /api/v1/admin/vehicles/{id}
 
-### Pricing
+#### Pricing
 
 - GET /api/v1/pricing/rules
 - GET /api/v1/pricing/rules/{id}
 - POST /api/v1/pricing/rules
 - PATCH /api/v1/pricing/rules/{id}
 
-### Reservas
+#### Reservas
 
 - POST /api/v1/reservations
 - GET /api/v1/reservations/{id}
 - PATCH /api/v1/reservations/{id}
 - POST /api/v1/reservations/{id}/cancel
 
-### Pagamentos
+#### Pagamentos
 
 - POST /api/v1/payments/preauth
 - POST /api/v1/payments/capture
 - POST /api/v1/payments/refund
 - GET /api/v1/payments/{id}
 
-## Regras Técnicas e de Negócio Relevantes
-
-- reserva é criada por categoria.
-- o front usa o veículo encontrado como contexto visual, não como contrato de criação.
-- reservas começam em PENDING_PAYMENT.
-- capture aprovada pode confirmar a reserva e reservar o veículo.
-- roles reais: Customer e Admin.
-- autenticação é por JWT Bearer.
-- senhas novas usam BCrypt; o login atual ainda aceita fallback em texto puro por compatibilidade com dados mockados existentes.
-
 ## Front-end Oficial
 
-### Áreas disponíveis
+Áreas disponíveis:
 
 Públicas:
 
@@ -145,82 +189,44 @@ Admin:
 - /admin/vehicles/:vehicleId
 - /admin/pricing
 
-### Estratégia de autenticação no front
+Estratégia de integração:
 
-- JWT persistido no cliente.
-- refresh via /api/v1/auth/refresh quando o token se aproxima da expiração.
-- logout automático ao receber 401 da API.
-- menus e rotas protegidos por role.
+- Axios centralizado em `frontend/src/api/http.ts`
+- TanStack Query para queries e mutations
+- proxy do Vite para `/api`, apontando por padrão para `http://localhost:5097`
 
-### Estratégia de integração
+Variáveis de ambiente de referência em [frontend/.env.example](frontend/.env.example):
 
-- Axios centralizado em frontend/src/api/http.ts.
-- TanStack Query para queries e mutations.
-- proxy do Vite para /api em desenvolvimento, apontando por padrão para http://localhost:5097.
+- `VITE_API_BASE_URL`
+- `VITE_PROXY_TARGET`
 
-## Como rodar
-
-### Pré-requisitos
-
-- .NET 8 SDK
-- Node.js 20+
-- npm 10+
+## Stack
 
 ### Backend
 
-```bash
-cd AlugueldeCarros
-dotnet restore
-dotnet build
-dotnet run
-```
-
-Backend local:
-
-- http://localhost:5097
-- https://localhost:7110
-- Swagger: https://localhost:7110/swagger
+- .NET 8
+- ASP.NET Core Web API
+- Microsoft.AspNetCore.Authentication.JwtBearer 8.0.25
+- Swashbuckle.AspNetCore 6.6.2
+- System.IdentityModel.Tokens.Jwt 8.17.0
+- BCrypt.Net-Next 4.1.0
 
 ### Front-end
 
-Na pasta do front:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Front local:
-
-- http://localhost:5173
-
-### Build do front
-
-```bash
-cd frontend
-npm run build
-```
-
-## Variáveis de Ambiente do Front
-
-Arquivo de referência:
-
-- frontend/.env.example
-
-Variáveis:
-
-- VITE_API_BASE_URL: base absoluta da API quando necessário.
-- VITE_PROXY_TARGET: alvo do proxy local do Vite. Padrão: http://localhost:5097.
-
-## Credenciais de Teste
-
-- customer@example.com / 123456
-- admin@aluguel.com / admin123
+- React 19
+- TypeScript 5
+- Vite 6
+- React Router 7
+- TanStack Query 5
+- Zustand 5
+- React Hook Form 7
+- Zod 3
+- Tailwind CSS 3
+- Axios 1
 
 ## Dados Mockados
 
-Arquivos em AlugueldeCarros/Resources/MockData:
+Arquivos em `AlugueldeCarros/Resources/MockData`:
 
 - users.json
 - roles.json
@@ -232,124 +238,46 @@ Arquivos em AlugueldeCarros/Resources/MockData:
 - reservations.json
 - payments.json
 
-Observação:
+Observações:
 
 - a maior parte das mudanças permanece em memória durante a execução.
 - users.json é persistido pelo repositório de usuários.
 
-## UX por Perfil
+## Testes
 
-Customer:
+Projeto de testes:
 
-- consulta catálogo.
-- cria reserva.
-- acompanha status.
-- executa pagamento.
-- remarca ou cancela quando permitido.
+- `AlugueldeCarros.Tests/AlugueldeCarros.Tests.csproj`
 
-Admin:
+Executar todos os testes:
 
-- acompanha visão operacional.
-- atribui roles.
-- cria e edita veículos.
-- cria e edita pricing rules.
+```bash
+dotnet test AlugueldeCarros.Tests/AlugueldeCarros.Tests.csproj
+```
 
-## Validação Atual
+Stack de testes do backend:
 
-Validações já executadas no projeto:
-
-- suíte do backend aprovada anteriormente.
-- build do front executado com sucesso via npm run build.
-
-## Documentação de Contexto
-
-Consulte a pasta .ai para reconstrução fiel do sistema:
-
-- .ai/architecture.md
-- .ai/business-rules.md
-- .ai/standards.md
-- .ai/tech-stack.md
-- **DI**: todos os repositórios registrados como `Singleton`, services como `Scoped`.
-
----
+- xUnit
+- FluentAssertions
+- Moq
+- Microsoft.AspNetCore.Mvc.Testing
 
 ## Troubleshooting
 
 | Problema | Solução |
 |----------|---------|
-| Erro 401 no Swagger | Faça login primeiro e use "Authorize" com `Bearer TOKEN` |
-| Build falha | Verifique se .NET 8 SDK está instalado (`dotnet --version`) |
-| Dados não carregam | Confirme que `Resources/MockData/*.json` existem e têm conteúdo válido |
+| Erro 401 no Swagger | Faça login primeiro e use `Bearer TOKEN` em Authorize |
+| 403 Forbidden | Verifique se o usuário tem a role necessária ou ownership do recurso |
+| Build falha | Verifique se o .NET 8 SDK está instalado e se não há o executável bloqueado por uma instância em execução |
+| Dados não carregam | Confirme a existência de `Resources/MockData/*.json` |
 | Token expirado | Faça login novamente ou use `POST /api/v1/auth/refresh` |
-| 403 Forbidden | Verifique se o usuário tem a role necessária (Customer vs Admin) |
+| Front não alcança a API | Verifique `VITE_PROXY_TARGET` ou `VITE_API_BASE_URL` |
 
----
+## Documentação de Contexto
 
-## Testes
+Para reconstrução fiel do sistema, consulte também:
 
-### Estrutura
-
-```
-tests/AlugueldeCarros.Tests/
-├── Unit/
-│   ├── Services/          (8 classes de teste)
-│   └── Security/          (JWT + RBAC)
-├── Integration/
-│   ├── Controllers/       (9 controllers)
-│   └── Endpoints/
-└── Fixtures/
-    ├── TestDataBuilder.cs
-    ├── JwtTokenFixture.cs
-    └── WebApplicationFactoryFixture.cs
-```
-
-### Stack
-
-- **xUnit** — Framework de testes
-- **FluentAssertions** — Assertions legíveis
-- **Moq** — Mocking de dependências
-- **WebApplicationFactory** — Testes HTTP
-
-### Executar Testes
-
-```bash
-# Todos os testes
-dotnet test tests/AlugueldeCarros.Tests.csproj
-
-# Teste específico
-dotnet test --filter "ClassName=UserServiceTests"
-
-# Watch mode
-dotnet test --watch
-```
-
-### Cobertura
-
-- **Services**: 80%+ (lógica crítica)
-- **Controllers**: 70%+ (HTTP + autenticação)
-- **Security**: 90%+ (JWT, RBAC)
-- **Repositories**: 60%+ (mock data)
-- **DTOs/Enums**: 0% (não testam estrutura)
-
-### Padrão AAA
-
-```csharp
-[Fact]
-public async Task LoginUser_ValidCredentials_ReturnsJwtToken()
-{
-    // Arrange
-    var request = new LoginRequest { Email = "user@test.com", Password = "Test@123" };
-
-    // Act
-    var result = await _authService.LoginAsync(request);
-
-    // Assert
-    result.Should().NotBeNull();
-    result.Token.Should().NotBeEmpty();
-}
-```
-
-### Sem CI/CD
-
-Phase 1 = Testes locais apenas (`dotnet test`)  
-Phase 2+ = GitHub Actions (futuro)
+- [.ai/architecture.md](.ai/architecture.md)
+- [.ai/business-rules.md](.ai/business-rules.md)
+- [.ai/standards.md](.ai/standards.md)
+- [.ai/tech-stack.md](.ai/tech-stack.md)
