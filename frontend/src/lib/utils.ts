@@ -50,8 +50,21 @@ export function toDateInputValue(value?: string | null) {
 export function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error;
   if (error && typeof error === 'object') {
-    const maybeError = error as { message?: string; response?: { data?: { error?: string } } };
-    return maybeError.response?.data?.error || maybeError.message || 'Nao foi possivel concluir a operacao.';
+    const maybeError = error as {
+      message?: string;
+      response?: {
+        data?: {
+          error?: string;
+          details?: Record<string, string[]>;
+        };
+      };
+    };
+
+    const validationMessage = maybeError.response?.data?.details
+      ? Object.values(maybeError.response.data.details).flat().find(Boolean)
+      : undefined;
+
+    return validationMessage || maybeError.response?.data?.error || maybeError.message || 'Nao foi possivel concluir a operacao.';
   }
   return 'Nao foi possivel concluir a operacao.';
 }

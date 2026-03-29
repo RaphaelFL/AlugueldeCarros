@@ -9,9 +9,9 @@ namespace AlugueldeCarros.Controllers;
 [Route("api/v1/pricing/rules")]
 public class PricingController : ControllerBase
 {
-    private readonly PricingService _pricingService;
+    private readonly IPricingService _pricingService;
 
-    public PricingController(PricingService pricingService)
+    public PricingController(IPricingService pricingService)
     {
         _pricingService = pricingService;
     }

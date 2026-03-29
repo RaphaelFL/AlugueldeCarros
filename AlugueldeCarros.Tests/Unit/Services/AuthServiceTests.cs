@@ -103,6 +103,23 @@ public class AuthServiceTests
         result.Should().NotBeNullOrWhiteSpace();
     }
 
+    [Fact]
+    public async Task LoginAsync_WithUppercaseAndSpacedEmail_NormalizesEmailBeforeLookup()
+    {
+        var email = "user@test.com";
+        var password = "ValidPassword@123";
+        var user = CreateUser(email, password);
+
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync(email))
+            .ReturnsAsync(user);
+
+        var result = await _authService.LoginAsync("  USER@Test.com  ", password);
+
+        result.Should().NotBeNullOrWhiteSpace();
+        _userRepositoryMock.Verify(r => r.GetByEmailAsync(email), Times.Once);
+    }
+
     #endregion
 
     #region Register Tests
@@ -176,6 +193,28 @@ public class AuthServiceTests
         capturedUser.Roles.Should().Contain("Customer");
     }
 
+    [Fact]
+    public async Task RegisterAsync_WithMixedCaseEmailAndSpacedNames_NormalizesValues()
+    {
+        User capturedUser = null;
+
+        _userRepositoryMock
+            .Setup(r => r.GetByEmailAsync("newuser@test.com"))
+            .ReturnsAsync((User)null);
+
+        _userRepositoryMock
+            .Setup(r => r.AddAsync(It.IsAny<User>()))
+            .Callback<User>(user => capturedUser = user)
+            .Returns(Task.CompletedTask);
+
+        await _authService.RegisterAsync("  NewUser@Test.com ", "SecurePassword@123", " John ", " Doe ");
+
+        capturedUser.Should().NotBeNull();
+        capturedUser!.Email.Should().Be("newuser@test.com");
+        capturedUser.FirstName.Should().Be("John");
+        capturedUser.LastName.Should().Be("Doe");
+    }
+
     #endregion
 
     #region Refresh Tests
@@ -205,7 +244,8 @@ public class AuthServiceTests
 
         var act = async () => await _authService.RefreshAsync(invalidToken);
 
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage("Invalid token");
     }
 
     [Fact]

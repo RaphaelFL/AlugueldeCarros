@@ -10,7 +10,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
-    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AlugueldeCarros.Domain\AlugueldeCarros.Domain.csproj" />
+    <ProjectReference Include="..\AlugueldeCarros.Application\AlugueldeCarros.Application.csproj" />
+    <ProjectReference Include="..\AlugueldeCarros.Infrastructure\AlugueldeCarros.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

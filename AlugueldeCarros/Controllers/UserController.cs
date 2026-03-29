@@ -9,10 +9,10 @@ namespace AlugueldeCarros.Controllers;
 [Authorize]
 public class UserController : ControllerBase
 {
-    private readonly UserService _userService;
-    private readonly ReservationService _reservationService;
+    private readonly IUserService _userService;
+    private readonly IReservationService _reservationService;
 
-    public UserController(UserService userService, ReservationService reservationService)
+    public UserController(IUserService userService, IReservationService reservationService)
     {
         _userService = userService;
         _reservationService = reservationService;

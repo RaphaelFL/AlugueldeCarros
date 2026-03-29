@@ -7,10 +7,10 @@ namespace AlugueldeCarros.Controllers;
 [Route("api/v1/vehicles")]
 public class VehiclesController : ControllerBase
 {
-    private readonly VehicleService _vehicleService;
-    private readonly VehicleCategoryService _categoryService;
+    private readonly IVehicleService _vehicleService;
+    private readonly IVehicleCategoryService _categoryService;
 
-    public VehiclesController(VehicleService vehicleService, VehicleCategoryService categoryService)
+    public VehiclesController(IVehicleService vehicleService, IVehicleCategoryService categoryService)
     {
         _vehicleService = vehicleService;
         _categoryService = categoryService;

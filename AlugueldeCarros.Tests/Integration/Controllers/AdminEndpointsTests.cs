@@ -86,4 +86,21 @@ public class AdminEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task AddRolesToUser_WithWhitespaceRoles_ReturnsBadRequest()
+    {
+        using var client = _factory.CreateApiClient();
+        await _factory.AuthenticateAsync(client, "admin@aluguel.com", "admin123");
+
+        var response = await client.PostAsJsonAsync("/api/v1/admin/users/1/roles", new
+        {
+            Roles = new[] { "   ", "" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        document.RootElement.GetProperty("error").GetString().Should().Be("At least one valid role is required");
+    }
 }

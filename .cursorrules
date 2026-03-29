@@ -7,13 +7,13 @@
 ## PRINCÍPIO FUNDAMENTAL
 
 Você está trabalhando em um repositório governado por Context Engineering.
-**Leia `.ai/` completamente antes de propor qualquer mudança.**
+**Leia `.ia/` completamente antes de propor qualquer mudança. `.ia/` é a fonte oficial de contexto deste repositório.**
 
 Estes são seus documentos vinculantes:
-1. `.ai/business-rules.md` — Domínio e regras de negócio
-2. `.ai/standards.md` — Padrões de código e organização
-3. `.ai/architecture.md` — Decisões técnicas e responsabilidades
-4. `.ai/tech-stack.md` — Stack obrigatório e restrições
+1. `.ia/business-rules.md` — Domínio e regras de negócio
+2. `.ia/standards.md` — Padrões de código e organização
+3. `.ia/architecture.md` — Decisões técnicas e responsabilidades
+4. `.ia/tech-stack.md` — Stack obrigatório e restrições
 
 ---
 
@@ -22,13 +22,24 @@ Estes são seus documentos vinculantes:
 ### Antes de Propor Qualquer Mudança
 
 ```
-1. LEIA .ai/business-rules.md completamente
-2. LEIA .ai/standards.md completamente
-3. LEIA .ai/architecture.md completamente
-4. LEIA .ai/tech-stack.md completamente
+1. LEIA .ia/business-rules.md completamente
+2. LEIA .ia/standards.md completamente
+3. LEIA .ia/architecture.md completamente
+4. LEIA .ia/tech-stack.md completamente
 5. VALIDE sua proposta contra CADA DOCUMENTO
 6. SE encontrar conflito → REJEITAR a proposta
 7. SE passar em todos → PROSSEGUIR com implementação
+```
+
+### Regras Obrigatórias para Front-end
+
+```
+1. MANTER separação entre estilo, lógica e estrutura visual
+2. COLOCAR CSS em arquivo dedicado
+3. COLOCAR lógica TypeScript em arquivo dedicado
+4. COLOCAR view/markup em arquivo dedicado
+5. NÃO concentrar tudo em um único componente grande
+6. SEGUIR a arquitetura oficial documentada em .ia/
 ```
 
 ### Depois de Propor Implementação
@@ -166,19 +177,20 @@ Controllers:
   ✅ Herdar de ControllerBase
   ✅ [ApiController] e [Route("api/v1/[controller]")]
   ✅ [Authorize] para protegido
-  ✅ [Authorize(Roles = "ADMIN")] para admin
+   ✅ [Authorize(Roles = "Admin")] para admin
   ✅ [AllowAnonymous] explícito para público
   ❌ Lógica de negócio em controller
 
 Services:
-  ✅ IService + Service(IService)
-  ✅ Lógica de negócio aqui
-  ✅ Chamar repositories
-  ✅ Lançar exceções customizadas
-  ❌ HTTP direto
+   ✅ Contratos em AlugueldeCarros.Application/Contracts/Services
+   ✅ Implementações em AlugueldeCarros.Application/Services
+   ✅ Lógica de negócio aqui
+   ✅ Chamar repositories por interface
+   ❌ HTTP direto
 
 Repositories:
-  ✅ IRepository + JsonRepository
+   ✅ Contratos em AlugueldeCarros.Application/Contracts/Repositories
+   ✅ Implementações InMemory na AlugueldeCarros.Infrastructure
   ✅ Métodos async (Task, Task<T>)
   ✅ ReadOnly Query
   ✅ CRUD básico
@@ -188,14 +200,12 @@ Repositories:
 ### Organização de Pastas
 
 ```
-✅ Seguir estrutura em standards.md seção 2
-✅ Domain/Entities para modelos
-✅ Domain/Enums para status
-✅ Controllers/ para endpoints
-✅ Services/ para lógica
-✅ Repositories/ para interfaces
-✅ DTOs/ para request/response
-✅ Resources/MockData/ para JSON
+✅ Seguir estrutura em standards.md
+✅ AlugueldeCarros.Domain para entidades e enums
+✅ AlugueldeCarros.Application para contratos e services
+✅ AlugueldeCarros.Infrastructure para repositories e loaders
+✅ AlugueldeCarros para endpoints, DTOs, middleware e autenticação HTTP
+✅ Resources/MockData para JSON
 
 ❌ Não criar pastas paralelas (ex: Handlers ao lado de Services)
 ❌ Não misturar responsabilidades

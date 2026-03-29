@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
 using AlugueldeCarros.Exceptions;
 
 namespace AlugueldeCarros.Middleware;
@@ -27,13 +28,21 @@ public class ExceptionHandlingMiddleware
         {
             await HandleExceptionAsync(context, (int)HttpStatusCode.Unauthorized, ex.Message);
         }
+        catch (System.ComponentModel.DataAnnotations.ValidationException ex)
+        {
+            await HandleExceptionAsync(context, (int)HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            await HandleExceptionAsync(context, (int)HttpStatusCode.NotFound, ex.Message);
+        }
         catch (InvalidOperationException ex)
         {
             await HandleExceptionAsync(context, (int)HttpStatusCode.BadRequest, ex.Message);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await HandleExceptionAsync(context, (int)HttpStatusCode.InternalServerError, ex.Message);
+            await HandleExceptionAsync(context, (int)HttpStatusCode.InternalServerError, "An unexpected error occurred.");
         }
     }
 

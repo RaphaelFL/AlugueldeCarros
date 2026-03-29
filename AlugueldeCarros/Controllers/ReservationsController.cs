@@ -11,9 +11,9 @@ namespace AlugueldeCarros.Controllers;
 [Route("api/v1/reservations")]
 public class ReservationsController : ControllerBase
 {
-    private readonly ReservationService _reservationService;
+    private readonly IReservationService _reservationService;
 
-    public ReservationsController(ReservationService reservationService)
+    public ReservationsController(IReservationService reservationService)
     {
         _reservationService = reservationService;
     }

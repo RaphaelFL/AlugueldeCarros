@@ -1,0 +1,24 @@
+.login-page-shell {
+  align-items: stretch;
+}
+
+.login-page-hero,
+.login-page-panel {
+  min-height: 100%;
+}
+
+.login-page-kicker {
+  letter-spacing: 0.32em;
+}
+
+.login-page-credentials {
+  max-width: 28rem;
+}
+
+.login-page-mode-switch {
+  width: fit-content;
+}
+
+.login-page-feedback {
+  min-height: 0;
+}

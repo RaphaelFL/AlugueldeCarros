@@ -11,9 +11,9 @@ namespace AlugueldeCarros.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminVehiclesController : ControllerBase
 {
-    private readonly VehicleService _vehicleService;
+    private readonly IVehicleService _vehicleService;
 
-    public AdminVehiclesController(VehicleService vehicleService)
+    public AdminVehiclesController(IVehicleService vehicleService)
     {
         _vehicleService = vehicleService;
     }

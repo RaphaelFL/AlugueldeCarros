@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AlugueldeCarros.Security;
 
-public class JwtTokenService
+public class JwtTokenService : ITokenService
 {
     private readonly JwtSettings _jwtSettings;
 
@@ -42,5 +42,16 @@ public class JwtTokenService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public int GetUserIdFromToken(string token)
+    {
+        var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            throw new ArgumentException("Invalid token", nameof(token));
+
+        return userId;
     }
 }

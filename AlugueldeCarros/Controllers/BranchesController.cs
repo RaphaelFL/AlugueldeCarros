@@ -7,9 +7,9 @@ namespace AlugueldeCarros.Controllers;
 [Route("api/v1/branches")]
 public class BranchesController : ControllerBase
 {
-    private readonly BranchService _branchService;
+    private readonly IBranchService _branchService;
 
-    public BranchesController(BranchService branchService)
+    public BranchesController(IBranchService branchService)
     {
         _branchService = branchService;
     }

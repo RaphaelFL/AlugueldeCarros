@@ -10,9 +10,9 @@ namespace AlugueldeCarros.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminUsersController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
 
-    public AdminUsersController(UserService userService)
+    public AdminUsersController(IUserService userService)
     {
         _userService = userService;
     }
@@ -35,8 +35,8 @@ public class AdminUsersController : ControllerBase
     [HttpPost("{id}/roles")]
     public async Task<IActionResult> AddRolesToUser(int id, [FromBody] AddUserRolesRequest request)
     {
-        if (request?.Roles == null || !request.Roles.Any())
-            return BadRequest("At least one role is required");
+        if (!request.Roles.Any(role => !string.IsNullOrWhiteSpace(role)))
+            return BadRequest(new { error = "At least one valid role is required" });
 
         await _userService.AssignRolesAsync(id, request.Roles);
         return NoContent();

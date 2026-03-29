@@ -1,0 +1,27 @@
+.admin-vehicle-editor-card {
+  max-width: 48rem;
+}
+
+.admin-vehicle-editor-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.admin-vehicle-editor-cancel {
+  background-color: rgb(226 232 240);
+  color: rgb(30 41 59);
+}
+
+.admin-vehicle-editor-cancel:hover {
+  background-color: rgb(203 213 225);
+}
+
+.admin-vehicle-editor-error {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .admin-vehicle-editor-actions {
+    grid-column: span 2 / span 2;
+  }
+}

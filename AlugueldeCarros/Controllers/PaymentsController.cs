@@ -10,10 +10,10 @@ namespace AlugueldeCarros.Controllers;
 [Route("api/v1/payments")]
 public class PaymentsController : ControllerBase
 {
-    private readonly PaymentService _paymentService;
+    private readonly IPaymentService _paymentService;
     private readonly IReservationRepository _reservationRepository;
 
-    public PaymentsController(PaymentService paymentService, IReservationRepository reservationRepository)
+    public PaymentsController(IPaymentService paymentService, IReservationRepository reservationRepository)
     {
         _paymentService = paymentService;
         _reservationRepository = reservationRepository;

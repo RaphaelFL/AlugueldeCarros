@@ -1,0 +1,12 @@
+.admin-pricing-form {
+  min-height: 0;
+}
+
+.admin-pricing-cancel {
+  background-color: rgb(226 232 240);
+  color: rgb(30 41 59);
+}
+
+.admin-pricing-cancel:hover {
+  background-color: rgb(203 213 225);
+}

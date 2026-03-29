@@ -1,6 +1,6 @@
 # Aluguel de Carros
 
-Plataforma de aluguel de veículos com backend ASP.NET Core e front-end React oficial na pasta frontend.
+Plataforma de aluguel de veículos com backend .NET 8 separado por projetos e front-end React oficial na pasta frontend.
 
 Estado atual do projeto:
 
@@ -31,10 +31,13 @@ Limites importantes:
 
 ```text
 .
-├── .ai/                       # contexto operacional do projeto
-├── AlugueldeCarros/           # backend ASP.NET Core Web API
-├── AlugueldeCarros.Tests/     # testes do backend
-├── frontend/                  # SPA React com Vite
+├── .ia/                             # contexto operacional oficial do projeto
+├── AlugueldeCarros/                 # API ASP.NET Core Web API
+├── AlugueldeCarros.Domain/          # entidades e enums
+├── AlugueldeCarros.Application/     # regras de negócio e contratos
+├── AlugueldeCarros.Infrastructure/  # repositórios in-memory e loaders
+├── AlugueldeCarros.Tests/           # testes do backend
+├── frontend/                        # SPA React com Vite
 └── README.md
 ```
 
@@ -49,10 +52,9 @@ Limites importantes:
 ### Backend
 
 ```bash
-cd AlugueldeCarros
 dotnet restore
-dotnet build
-dotnet run
+dotnet build AlugueldeCarros.sln
+dotnet run --project AlugueldeCarros/AlugueldeCarros.csproj
 ```
 
 Backend local:
@@ -163,6 +165,14 @@ Regras importantes:
 
 ## Front-end Oficial
 
+Princípio arquitetural oficial do front:
+
+- estilo em arquivo dedicado
+- lógica TypeScript em arquivo dedicado
+- estrutura visual em arquivo de view dedicado
+
+Em React, isso significa tratar `.tsx` como camada de apresentação e evitar concentrar regra de negócio, integração e estilo de forma desorganizada no mesmo arquivo.
+
 Áreas disponíveis:
 
 Públicas:
@@ -206,6 +216,7 @@ Variáveis de ambiente de referência em [frontend/.env.example](frontend/.env.e
 
 - .NET 8
 - ASP.NET Core Web API
+- class libraries Domain, Application e Infrastructure
 - Microsoft.AspNetCore.Authentication.JwtBearer 8.0.25
 - Swashbuckle.AspNetCore 6.6.2
 - System.IdentityModel.Tokens.Jwt 8.17.0
@@ -278,7 +289,7 @@ Stack de testes do backend:
 
 Para reconstrução fiel do sistema, consulte também:
 
-- [.ai/architecture.md](.ai/architecture.md)
-- [.ai/business-rules.md](.ai/business-rules.md)
-- [.ai/standards.md](.ai/standards.md)
-- [.ai/tech-stack.md](.ai/tech-stack.md)
+- [.ia/architecture.md](.ia/architecture.md)
+- [.ia/business-rules.md](.ia/business-rules.md)
+- [.ia/standards.md](.ia/standards.md)
+- [.ia/tech-stack.md](.ia/tech-stack.md)
